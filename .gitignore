@@ -1,0 +1,8 @@
+dist/
+deploy_versions/
+.temp/
+.rn_temp/
+node_modules/
+server/node_modules/
+wechatapp//node_modules/
+.DS_Store
