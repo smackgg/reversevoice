@@ -5,7 +5,7 @@
   "author": "smackgg<smackgg@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node,StaticAssets\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\" \"npm run watch-copy-static-assets\"",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node,StaticAssets\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\" \"npm run copy-static-assets\"",
     "start": "npm run serve",
     "build": "npm run build-ts && npm run lint && npm run copy-static-assets",
     "serve": "node dist/server.js",
@@ -17,7 +17,6 @@
     "watch-ts": "tsc -w",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
     "copy-static-assets": "ts-node copyStaticAssets.ts",
-    "watch-copy-static-assets": "nodemon --watch src/public && npm run copy-static-assets",
     "debug": "npm run build && npm run watch-debug",
     "serve-debug": "nodemon --inspect dist/server.js",
     "watch-debug": "concurrently -k -p \"[{name}]\" -n \"Sass,TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-sass\" \"npm run watch-ts\" \"npm run serve-debug\""
@@ -55,6 +54,7 @@
     "lodash": "^4.17.15",
     "lusca": "^1.6.1",
     "mongoose": "^5.7.1",
+    "node-watch": "^0.6.3",
     "nodemailer": "^6.3.0",
     "pug": "^2.0.4",
     "request": "^2.88.0",

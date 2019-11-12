@@ -1,6 +1,5 @@
 import Koa from 'koa'
 import compression from 'koa-compress'
-// import session from 'koa-session-minimal'
 import session from 'koa-session'
 import bodyParser from 'koa-better-body'
 import lusca from 'koa-lusca'

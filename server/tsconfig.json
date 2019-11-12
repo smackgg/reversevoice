@@ -14,9 +14,13 @@
                 "node_modules/*",
                 "src/types/*"
             ]
-        }
+        },
+        "types": [],
     },
     "include": [
         "src/**/*"
+    ],
+    "exclude": [
+        "node_modules"
     ]
 }
