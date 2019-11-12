@@ -17,6 +17,10 @@ export const SECRET_KEYS = process.env['SECRET_KEYS'].split(',')
 
 export const MONGODB_URI = prod ? process.env['MONGODB_URI'] : process.env['MONGODB_URI_LOCAL']
 
+// wechat
+export const APP_ID = process.env['APP_ID']
+export const APP_SECRET = process.env['APP_SECRET']
+
 if (!SESSION_SECRET) {
   logger.error('No client secret. Set SESSION_SECRET environment variable.')
   process.exit(1)
