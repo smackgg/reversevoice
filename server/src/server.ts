@@ -1,22 +1,70 @@
-import errorHandler from 'errorhandler'
+// import errorHandler from 'errorhandler'
+
+import http from 'http'
+import logger from './util/logger'
 
 import app from './app'
 
 /**
- * Error Handler. Provides full stack - remove for production
- */
-app.use(errorHandler())
+* Get port from environment and store in Express.
+*/
+
+const port = '8173'
+// app.set('port', port);
 
 /**
- * Start Express server.
- */
-const server = app.listen(app.get('port'), () => {
-    console.log(
-        '  App is running at http://localhost:%d in %s mode',
-        app.get('port'),
-        app.get('env'),
-    )
-    console.log('  Press CTRL-C to stop\n')
-})
+* Create HTTP server.
+*/
+
+const server = http.createServer(app.callback())
+
+
+/**
+* Event listener for HTTP server "error" event.
+*/
+
+function onError(error: any) {
+  if (error.syscall !== 'listen') {
+    throw error
+  }
+
+  const bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges')
+      process.exit(1)
+      break
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use')
+      process.exit(1)
+      break
+    default:
+      throw error
+  }
+}
+
+/**
+* Event listener for HTTP server "listening" event.
+*/
+
+function onListening() {
+  const addr = server.address()
+  const bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : `http://localhost:${addr.port}`
+  logger.debug('Listening on ' + bind)
+}
+
+/**
+* Listen on provided port, on all network interfaces.
+*/
+
+server.listen(port)
+server.on('error', onError)
+server.on('listening', onListening)
 
 export default server
