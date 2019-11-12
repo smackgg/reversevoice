@@ -1,0 +1,1 @@
+export const UPDATE_GLOBAL_DATA = 'global/UPDATE_GLOBAL_DATA'

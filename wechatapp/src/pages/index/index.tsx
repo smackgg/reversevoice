@@ -1,11 +1,10 @@
 import { ComponentClass } from 'react'
 import Taro, { Component, Config } from '@tarojs/taro'
-import { View, Button, Text } from '@tarojs/components'
 import { connect } from '@tarojs/redux'
-
-import { add, minus, asyncAdd } from '../../actions/counter'
-
-import './index.less'
+import { View, Image, Text } from '@tarojs/components'
+import classNames from 'classnames'
+import { AtIcon } from 'taro-ui'
+import './index.scss'
 
 // #region 书写注意
 //
@@ -18,71 +17,63 @@ import './index.less'
 // #endregion
 
 type PageStateProps = {
-  counter: {
-    num: number
-  }
 }
 
 type PageDispatchProps = {
-  add: () => void
-  dec: () => void
-  asyncAdd: () => any
 }
 
 type PageOwnProps = {}
 
-type PageState = {}
+type PageState = {
+}
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
 
 interface Index {
-  props: IProps;
+  props: IProps
 }
 
-@connect(({ counter }) => ({
-  counter
-}), (dispatch) => ({
-  add () {
-    dispatch(add())
-  },
-  dec () {
-    dispatch(minus())
-  },
-  asyncAdd () {
-    dispatch(asyncAdd())
-  }
+@connect(() => ({
+}), (dispatch: any) => ({
 }))
+
 class Index extends Component {
+  orderCategoryId: string
 
-    /**
-   * 指定config的类型声明为: Taro.Config
-   *
-   * 由于 typescript 对于 object 类型推导只能推出 Key 的基本类型
-   * 对于像 navigationBarTextStyle: 'black' 这样的推导出的类型是 string
-   * 提示和声明 navigationBarTextStyle: 'black' | 'white' 类型冲突, 需要显示声明类型
-   */
-    config: Config = {
-    navigationBarTitleText: '首页'
+  /**
+ * 指定config的类型声明为: Taro.Config
+ *
+ * 由于 typescript 对于 object 类型推导只能推出 Key 的基本类型
+ * 对于像 navigationBarTextStyle: 'black' 这样的推导出的类型是 string
+ * 提示和声明 navigationBarTextStyle: 'black' | 'white' 类型冲突, 需要显示声明类型
+ */
+  config: Config = {
+    navigationBarTitleText: '首页',
   }
 
-  componentWillReceiveProps (nextProps) {
-    console.log(this.props, nextProps)
+  state: PageState = {
   }
 
-  componentWillUnmount () { }
+  componentWillMount() {
+  }
 
-  componentDidShow () { }
+  componentDidShow() {
 
-  componentDidHide () { }
+  }
 
-  render () {
+
+
+  // 返回首页
+  goHome = () => {
+    Taro.redirectTo({
+      url: '/pages/entry/index',
+    })
+  }
+
+  render() {
     return (
-      <View className='index'>
-        <Button className='add_btn' onClick={this.props.add}>+</Button>
-        <Button className='dec_btn' onClick={this.props.dec}>-</Button>
-        <Button className='dec_btn' onClick={this.props.asyncAdd}>async</Button>
-        <View><Text>{this.props.counter.num}</Text></View>
-        <View><Text>Hello, World</Text></View>
+      <View className="index">
+          11
       </View>
     )
   }

@@ -1,0 +1,38 @@
+// @import "~taro-ui/dist/style/index.scss";
+@import './var.less';
+@import "./assets/font/font.scss";
+
+view,
+scroll-view,
+button {
+  box-sizing: border-box;
+}
+
+// 两行截取、单行截取
+.clamp-2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 2;
+    word-break: break-all;
+}
+
+.clamp-3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 3;
+    word-break: break-all;
+}
+
+.clamp {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.text-color-red {
+  color: @text-color-red;
+}

@@ -6,7 +6,7 @@
     "preserveConstEnums": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "lib",
     "noUnusedLocals": true,
@@ -21,7 +21,13 @@
     "resolveJsonModule": true,
     "typeRoots": [
       "node_modules/@types"
-    ]
+    ],
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
+    "types": [],
   },
   "exclude": [
     "node_modules",
