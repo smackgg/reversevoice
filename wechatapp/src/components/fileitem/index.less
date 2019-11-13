@@ -1,0 +1,77 @@
+@import '../../var.less';
+
+.file-item {
+  border-bottom: 1rpx solid @border-color;
+  padding-bottom: 40rpx;
+  height: 165rpx;
+  overflow: hidden;
+  transition: height .4s;
+  transform: translateZ(0);
+
+  &.active {
+    height: 425rpx;
+    overflow: hidden;
+  }
+
+  .head {
+    padding: 40rpx 0 60rpx;
+  }
+
+  .time {
+    font-size: 34rpx;
+    margin-bottom: 5rpx;
+  }
+
+  .line2 {
+    display: flex;
+    justify-content: space-between;
+
+    .date, .duration-time {
+      font-size: 30px;
+      color: @text-color-gray;
+    }
+  }
+
+  &.playing {
+    .progress .progress-bar .mask {
+        transition: all .2s linear;
+    }
+  }
+
+  .progress {
+    .progress-bar {
+      position: relative;
+      width: 100%;
+      height: 4rpx;
+      background: fade(@text-color-gray, 30%);
+
+      .mask {
+        position: absolute;
+        width: 0;
+        height: 100%;
+        z-index: 1;
+        background: fade(@text-color-gray, 80%);
+        &::after {
+          content: "";
+          width: 12rpx;
+          height: 12rpx;
+          display: block;
+          border-radius: 50%;
+          background: fade(@text-color-gray, 80%);
+          position: absolute;
+          right: -12rpx;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+      }
+    }
+
+    .progress-time {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20rpx;
+      font-size: 24px;
+      color: @text-color-gray;
+    }
+  }
+}

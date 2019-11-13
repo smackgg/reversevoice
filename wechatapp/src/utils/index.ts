@@ -87,9 +87,24 @@ export const valueEqual = (a: any, b: any): boolean => {
   return false
 }
 
+// 处理0补全 11,0000 => 0011
+export const zeroSubstr = (num: number, length: number) => (Array(length).join('0') + num).slice(-length)
+
 export const getCurrentPageUrl = (): string => {
   var pages = Taro.getCurrentPages()    //获取加载的页面
   var currentPage = pages[pages.length - 1]    //获取当前页面的对象
   var url = currentPage.route    //当前页面url
   return url
+}
+
+
+// 获取倒计时时间展示字符串
+export const getTimeStr = (time: number) => {
+  const s = zeroSubstr(parseInt('' + (time / 1000) % 60), 2)
+  const ms = zeroSubstr(parseInt('' + time % 1000 / 10), 2)
+  return {
+    s,
+    ms,
+    str: `${s}:${ms}`,
+  }
 }

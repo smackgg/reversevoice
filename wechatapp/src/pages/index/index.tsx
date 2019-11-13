@@ -1,10 +1,15 @@
 import { ComponentClass } from 'react'
-import Taro, { Component, Config } from '@tarojs/taro'
+import Taro, { Component, Config, RecorderManager } from '@tarojs/taro'
 import { connect } from '@tarojs/redux'
-import { View, Image, Text } from '@tarojs/components'
+import { View, Image, Text, Block } from '@tarojs/components'
 import classNames from 'classnames'
-import { AtIcon } from 'taro-ui'
-import './index.scss'
+// import { AtIcon } from 'taro-ui'
+import { getTimeStr } from '@/utils'
+import { FileList } from '@/components'
+
+import './index.less'
+
+
 
 // #region 书写注意
 //
@@ -24,7 +29,16 @@ type PageDispatchProps = {
 
 type PageOwnProps = {}
 
+type File = {
+  createTime: number
+  filePath: string
+  size: number
+}
+
 type PageState = {
+  recording: boolean,
+  time: number,
+  fileList?: File[],
 }
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
@@ -38,8 +52,6 @@ interface Index {
 }))
 
 class Index extends Component {
-  orderCategoryId: string
-
   /**
  * 指定config的类型声明为: Taro.Config
  *
@@ -51,17 +63,44 @@ class Index extends Component {
     navigationBarTitleText: '首页',
   }
 
+  timer?: number
+  RecorderManager: RecorderManager
+  tempFilePath?: string
+
   state: PageState = {
+    recording: false,
+    time: 0,
+    fileList: undefined,
   }
 
   componentWillMount() {
+    this.getFiles()
+    this.RecorderManager = Taro.getRecorderManager()
+    this.RecorderManager.onStop((res) => {
+      // 保存文件
+      Taro.saveFile({
+        tempFilePath: res.tempFilePath,
+        success: () => {
+          // 更新文件列表
+          this.getFiles()
+        },
+      })
+    })
   }
 
   componentDidShow() {
 
   }
 
-
+  getFiles = () => {
+    Taro.getSavedFileList({
+      success: (res: any) => {
+        this.setState({
+          fileList: res.fileList ? res.fileList.sort((a: File, b: File) => b.createTime - a.createTime) : [],
+        })
+      },
+    })
+  }
 
   // 返回首页
   goHome = () => {
@@ -70,10 +109,73 @@ class Index extends Component {
     })
   }
 
+  // 开始录音
+  onRecordHandler = () => {
+    const { recording } = this.state
+    this.setState({
+      recording: !recording,
+    })
+    // 开始录音
+    if (!recording) {
+      this.startRecord()
+    } else {
+      this.stopRecord()
+    }
+  }
+
+  // 开始录音
+  startRecord = () => {
+    this.RecorderManager.start({
+      format: 'mp3',
+      // sampleRate: '8000',
+      duration: 15000,
+    })
+
+    // 计时器
+    this.timer = setInterval(() => {
+      if (this.state.time >= 10000) {
+        this.stopRecord()
+        return
+      }
+      this.setState({
+        time: this.state.time + 100,
+      })
+    }, 100)
+  }
+
+  // 结束录音
+  stopRecord = (resetTime = true) => {
+    clearInterval(this.timer)
+    this.timer = undefined
+    this.RecorderManager.stop()
+
+    if (resetTime) {
+      this.setState({
+        time: 0,
+      })
+    }
+  }
+
   render() {
+    const { recording, time, fileList } = this.state
+    const { s, ms } = getTimeStr(time)
+    console.log(fileList)
     return (
-      <View className="index">
-          11
+      <View className={classNames('index', { active: recording })}>
+        {
+          fileList && <FileList fileList={fileList} />
+        }
+        <View className="record">
+          {
+              recording && <Block>
+                <View className="record-title">正在录音中</View>
+                <View className="record-time"><View className="time-s">{s}</View>:<View className="time-ms">{ms}</View></View>
+              </Block>
+          }
+          <View className="record-button" onClick={this.onRecordHandler}>
+            <View className={classNames('record-button__inner', { active: recording })}></View>
+          </View>
+        </View>
       </View>
     )
   }
