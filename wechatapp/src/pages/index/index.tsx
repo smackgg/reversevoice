@@ -95,7 +95,6 @@ class Index extends Component {
   getFiles = () => {
     Taro.getSavedFileList({
       success: (res: any) => {
-        console.log(res.fileList)
         this.setState({
           fileList: res.fileList ? res.fileList.sort((a: File, b: File) => b.createTime - a.createTime) : [],
         })

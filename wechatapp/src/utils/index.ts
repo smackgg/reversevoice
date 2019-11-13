@@ -1,4 +1,5 @@
-import Taro from '@tarojs/taro'
+import Taro, { requirePlugin } from '@tarojs/taro'
+import envConfig from './env'
 
 export { default as dateFormat } from './dateFormat'
 
@@ -108,3 +109,10 @@ export const getTimeStr = (time: number) => {
     str: `${s}:${ms}`,
   }
 }
+
+
+// env
+export const prod = process.env.NODE_ENV === 'production'
+
+export const API_URL = prod ? envConfig.API_URL : envConfig.API_URL_LOCAL
+// console.log(prod)

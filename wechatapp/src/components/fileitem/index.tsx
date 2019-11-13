@@ -3,8 +3,9 @@ import Taro, { InnerAudioContext } from '@tarojs/taro'
 import PropTypes from 'prop-types'
 import { View } from '@tarojs/components'
 import moment from 'moment'
-import { getTimeStr } from '@/utils'
+import { getTimeStr, API_URL } from '@/utils'
 import classNames from 'classnames'
+import request from '@/utils/request'
 
 import './index.less'
 
@@ -93,7 +94,7 @@ class FileItem extends Taro.Component {
     this.setState({
       fileState: file,
     })
-
+    console.log(innerAudioContext)
     // 获取音频时长
     innerAudioContext.onCanplay(() => {
       innerAudioContext.duration
@@ -182,7 +183,7 @@ class FileItem extends Taro.Component {
     }
 
     Taro.uploadFile({
-      url: 'http://172.24.185.131:8173/api/file/upload', //仅为示例，非真实的接口地址
+      url: `${API_URL}/api/file/mp3/reverse`, //仅为示例，非真实的接口地址
       filePath: fileState.filePath,
       name: 'file',
       formData: {
@@ -194,9 +195,10 @@ class FileItem extends Taro.Component {
       },
       success: (res) => {
         const data = JSON.parse(res.data)
+        const path = data.data.path
         //do something
         Taro.downloadFile({
-          url: data.data.path,
+          url: `${API_URL}/${path}`,
           success: (saveRes) => {
             // 更新文件列表
             // this.getFiles()
@@ -205,6 +207,12 @@ class FileItem extends Taro.Component {
               complete: () => {
                 this.props.shouldUpdateFileList()
               },
+            })
+
+            // 清除文件
+            request({
+              url: `${API_URL}/api/file/mp3/reverse?path=${path}`,
+              method: 'DELETE',
             })
           },
         })
