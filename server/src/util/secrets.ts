@@ -21,6 +21,10 @@ export const MONGODB_URI = prod ? process.env['MONGODB_URI'] : process.env['MONG
 export const APP_ID = process.env['APP_ID']
 export const APP_SECRET = process.env['APP_SECRET']
 
+// QINIU
+export const QINIU_ACCESS_KEY = process.env['QINIU_ACCESS_KEY']
+export const QINIU_SECRET_KEY = process.env['QINIU_SECRET_KEY']
+
 if (!SESSION_SECRET) {
   logger.error('No client secret. Set SESSION_SECRET environment variable.')
   process.exit(1)

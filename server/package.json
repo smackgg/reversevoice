@@ -22,6 +22,8 @@
     "watch-debug": "concurrently -k -p \"[{name}]\" -n \"Sass,TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-sass\" \"npm run watch-ts\" \"npm run serve-debug\""
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
+    "@types/fluent-ffmpeg": "^2.1.11",
     "@types/koa": "^2.0.52",
     "@types/koa-better-body": "^3.1.0",
     "@types/koa-compress": "^2.0.9",
@@ -41,6 +43,7 @@
     "errorhandler": "^1.5.1",
     "express-validator": "^6.2.0",
     "fbgraph": "^1.4.4",
+    "fluent-ffmpeg": "^2.1.2",
     "koa": "^2.11.0",
     "koa-better-body": "^3.1.13",
     "koa-compress": "^3.0.0",
@@ -56,6 +59,7 @@
     "lodash": "^4.17.15",
     "lusca": "^1.6.1",
     "mongoose": "^5.7.1",
+    "node-qiniu": "^6.2.0",
     "node-watch": "^0.6.3",
     "nodemailer": "^6.3.0",
     "pug": "^2.0.4",

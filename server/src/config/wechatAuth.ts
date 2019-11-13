@@ -7,5 +7,5 @@ export default async function (ctx: Context, next: Next) {
       ctx.throw(401, '微信登录失效')
     }
   }
-  next()
+  await next()
 }

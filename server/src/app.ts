@@ -33,11 +33,10 @@ mongoose.connect(mongoUrl, { useNewUrlParser: true, useCreateIndex: true, useUni
 // Express configuration
 app.keys = SECRET_KEYS
 
-app.use(json())
 app.use(compression())
 app.use(bodyParser({
-  uploadDir: path.resolve(__dirname, './public/static/'),
-  keepExtensions: true,
+  // uploadDir: path.resolve(__dirname, './public/'),
+  // keepExtensions: true,
   multipart: true,
   querystring: require('qs'),
 }))
@@ -47,6 +46,8 @@ app.use(flash())
 app.use(lusca.xframe('SAMEORIGIN'))
 app.use(lusca.xssProtection(true))
 app.use(koaStatic(`${__dirname}/public`))
+
+app.use(json())
 
 app.use(views(`${__dirname}/views`, {
   extension: 'ejs',
@@ -91,6 +92,7 @@ app.use(async (ctx, next) => {
 //  routes handler
 const routes = {
   user: require('./routes/user'),
+  file: require('./routes/file'),
   // users: require('./routes/users'),
   // 公共 api
   // user: require('./routes/user'),
