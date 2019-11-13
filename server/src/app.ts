@@ -90,7 +90,9 @@ app.use(async (ctx, next) => {
 })
 
 //  routes handler
-const routes = {
+const routes: {
+  [key: string]: any;
+} = {
   user: require('./routes/user'),
   file: require('./routes/file'),
   // users: require('./routes/users'),
@@ -107,7 +109,8 @@ const routes = {
 // routes
 Object.keys(routes).forEach(key => {
   const route = routes[key]
-  app.use(route.routes(), route.allowedMethods())
+  // , route.allowedMethods()
+  app.use(route.routes())
 })
 
 export default app

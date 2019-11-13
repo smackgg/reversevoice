@@ -12,7 +12,7 @@ const upLoadFile = (bucket = 'game', filename: string, path: string) => {
   const imagesBucket = qiniu.bucket(bucket)
   return new Promise((resolve, reject) => {
     // console.log(imageName)
-    imagesBucket.putFile(filename, path, (err, reply) => {
+    imagesBucket.putFile(filename, path, (err: any, reply: any) => {
       if (err) {
         reject(err)
         return

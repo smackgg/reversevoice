@@ -88,7 +88,7 @@ export function batch(config: any): any;
 
 export function bucket(bucket: any): any;
 
-export function config(key: any, value: any, ...args: any[]): any;
+export function config(key: any, value?: any, ...args: any[]): any;
 
 export function genToken(type: any, opts: any): any;
 
