@@ -4,7 +4,7 @@ import { connect } from '@tarojs/redux'
 import { View, Image, Text, Block } from '@tarojs/components'
 import classNames from 'classnames'
 // import { AtIcon } from 'taro-ui'
-import { getTimeStr } from '@/utils'
+import { getTimeStr, valueEqual } from '@/utils'
 import { FileList } from '@/components'
 
 import './index.less'
@@ -95,6 +95,7 @@ class Index extends Component {
   getFiles = () => {
     Taro.getSavedFileList({
       success: (res: any) => {
+        console.log(res.fileList)
         this.setState({
           fileList: res.fileList ? res.fileList.sort((a: File, b: File) => b.createTime - a.createTime) : [],
         })
@@ -156,14 +157,18 @@ class Index extends Component {
     }
   }
 
+  shouldUpdateFileList = () => {
+    this.getFiles()
+  }
+
   render() {
     const { recording, time, fileList } = this.state
     const { s, ms } = getTimeStr(time)
-    console.log(fileList)
+
     return (
       <View className={classNames('index', { active: recording })}>
         {
-          fileList && <FileList fileList={fileList} />
+          fileList && <FileList shouldUpdateFileList={this.shouldUpdateFileList} fileList={fileList} />
         }
         <View className="record">
           {

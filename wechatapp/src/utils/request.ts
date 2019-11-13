@@ -27,12 +27,12 @@ export default (option: RequestParams): Promise<Request.requestResult> => new Pr
     },
     success: res => {
       // token 失效
-      if (res && res.statusCode === 200 && res.data.code === 2000) {
-        Taro.redirectTo({
-          url: `/pages/authorize/index?from=${encodeURIComponent(getCurrentPageUrl())}`,
-        })
-        return
-      }
+      // if (res && res.statusCode === 200 && res.data.code === 2000) {
+      //   Taro.redirectTo({
+      //     url: `/pages/authorize/index?from=${encodeURIComponent(getCurrentPageUrl())}`,
+      //   })
+      //   return
+      // }
       if (res && res.statusCode === 200 && res.data.code === 0) {
         resolve(res.data)
         return

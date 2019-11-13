@@ -1,7 +1,7 @@
 import { ComponentClass } from 'react'
 import Taro, { InnerAudioContext } from '@tarojs/taro'
-import PropTypes, { number } from 'prop-types'
-import { View, Audio } from '@tarojs/components'
+import PropTypes from 'prop-types'
+import { View } from '@tarojs/components'
 import moment from 'moment'
 import { getTimeStr } from '@/utils'
 import classNames from 'classnames'
@@ -35,6 +35,7 @@ type PageOwnProps = {
   file: File
   active: boolean
   onShowDetail: () => void
+  shouldUpdateFileList: () => void
 }
 
 type PageState = {
@@ -54,8 +55,9 @@ class FileItem extends Taro.Component {
   static propTypes = {
     file: PropTypes.object,
     active: PropTypes.bool,
-    onPlay: PropTypes.func,
+    // onPlay: PropTypes.func,
     onShowDetail: PropTypes.func,
+    shouldUpdateFileList: PropTypes.func,
   }
 
   static defaultProps = {
@@ -78,6 +80,8 @@ class FileItem extends Taro.Component {
     if (nextProps.active !== this.props.active && !nextProps.active) {
       this.onStop()
     }
+
+    this.initAudio(nextProps.file)
   }
 
   // 初始化音频数据
@@ -154,6 +158,60 @@ class FileItem extends Taro.Component {
     }
   }
 
+  // 本地文件删除
+  onDelete = () => {
+    const { fileState } = this.state
+    if (!fileState) {
+      return
+    }
+    // console.log(fileState.filePath)
+    Taro.removeSavedFile({
+      filePath: fileState.filePath,
+      complete: () => {
+        this.props.shouldUpdateFileList()
+      },
+    })
+  }
+
+  // 音频反转
+  onReverse = () => {
+    const { fileState } = this.state
+
+    if (!fileState) {
+      return
+    }
+
+    Taro.uploadFile({
+      url: 'http://172.24.185.131:8173/api/file/upload', //仅为示例，非真实的接口地址
+      filePath: fileState.filePath,
+      name: 'file',
+      formData: {
+        'msg': 'voice',
+      },
+      header: {
+        'Content-Type': 'multipart/form-data',
+        'accept': 'application/json',
+      },
+      success: (res) => {
+        const data = JSON.parse(res.data)
+        //do something
+        Taro.downloadFile({
+          url: data.data.path,
+          success: (saveRes) => {
+            // 更新文件列表
+            // this.getFiles()
+            Taro.saveFile({
+              tempFilePath: saveRes.tempFilePath,
+              complete: () => {
+                this.props.shouldUpdateFileList()
+              },
+            })
+          },
+        })
+      },
+    })
+  }
+
   render() {
     const { fileState, durationTime, currentTime, playing } = this.state
     if (!fileState) {
@@ -187,6 +245,8 @@ class FileItem extends Taro.Component {
         <View onClick={this.onPlay}>播放</View>
         <View onClick={this.onPause}>暂停</View>
         <View onClick={this.onStop}>停止</View>
+        <View onClick={this.onReverse}>反转</View>
+        <View onClick={this.onDelete}>删除</View>
       </View>
     </View>
   }
