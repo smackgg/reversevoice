@@ -1,13 +1,14 @@
 import { ComponentClass } from 'react'
-import Taro, { Component, Config, RecorderManager } from '@tarojs/taro'
+import Taro, { Component, Config, RecorderManager, request } from '@tarojs/taro'
 import { connect } from '@tarojs/redux'
 import { View, Image, Text, Block } from '@tarojs/components'
 import classNames from 'classnames'
 // import { AtIcon } from 'taro-ui'
-import { getTimeStr, valueEqual } from '@/utils'
+import { getTimeStr } from '@/utils'
+import { saveFile, reverse, getFiles } from '@/utils/reverse'
 import { FileList } from '@/components'
 
-import './index.less'
+import './index.scss'
 
 
 
@@ -76,15 +77,11 @@ class Index extends Component {
   componentWillMount() {
     this.getFiles()
     this.RecorderManager = Taro.getRecorderManager()
-    this.RecorderManager.onStop((res) => {
+    this.RecorderManager.onStop(async (res) => {
       // 保存文件
-      Taro.saveFile({
-        tempFilePath: res.tempFilePath,
-        success: () => {
-          // 更新文件列表
-          this.getFiles()
-        },
-      })
+      const fileInfo = await saveFile(res.tempFilePath)
+      await reverse(fileInfo)
+      this.getFiles()
     })
   }
 
@@ -92,11 +89,12 @@ class Index extends Component {
 
   }
 
-  getFiles = () => {
+  getFiles = async () => {
+    const fileList = await getFiles()
     Taro.getSavedFileList({
       success: (res: any) => {
         this.setState({
-          fileList: res.fileList ? res.fileList.sort((a: File, b: File) => b.createTime - a.createTime) : [],
+          fileList,
         })
       },
     })

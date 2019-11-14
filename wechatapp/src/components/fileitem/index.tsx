@@ -3,9 +3,10 @@ import Taro, { InnerAudioContext } from '@tarojs/taro'
 import PropTypes from 'prop-types'
 import { View } from '@tarojs/components'
 import moment from 'moment'
-import { getTimeStr, API_URL } from '@/utils'
+import { getTimeStr } from '@/utils'
 import classNames from 'classnames'
-import request from '@/utils/request'
+import { LocalFileInfo } from '@/utils/reverse'
+import { AtIcon } from 'taro-ui'
 
 import './index.less'
 
@@ -24,26 +25,27 @@ moment.locale('zh-cn', {
   },
 })
 
-type File = {
-  createTime: number
-  filePath: string
-  size: number
-  // context: InnerAudioContext
-}
+// type File = {
+//   createTime: number
+//   filePath: string
+//   size: number
+//   // context: InnerAudioContext
+// }
 
 
 type PageOwnProps = {
-  file: File
+  file: LocalFileInfo
   active: boolean
-  onShowDetail: () => void
+  onShowDetail: (key: number) => void
   shouldUpdateFileList: () => void
 }
 
 type PageState = {
-  fileState?: File
+  fileState?: LocalFileInfo
   durationTime: number
   currentTime: number
   playing: boolean
+  activeIndex: number
 }
 
 interface FileItem {
@@ -71,37 +73,12 @@ class FileItem extends Taro.Component {
     durationTime: 0,
     currentTime: 0,
     playing: false,
+    activeIndex: 0,
   }
 
   componentDidMount() {
-    this.initAudio(this.props.file)
-  }
-
-  componentWillReceiveProps(nextProps: PageOwnProps) {
-    if (nextProps.active !== this.props.active && !nextProps.active) {
-      this.onStop()
-      this.innerAudioContext.destroy()
-    }
-
-    if (nextProps.active !== this.props.active && nextProps.active) {
-      this.initAudio(nextProps.file)
-    }
-
-    this.setState({
-      fileState: nextProps.file,
-    })
-  }
-
-  // 初始化音频数据
-  initAudio = (file: File) => {
     let innerAudioContext = Taro.createInnerAudioContext()
     this.innerAudioContext = innerAudioContext
-    innerAudioContext.src = file.filePath
-
-    this.setState({
-      fileState: file,
-    })
-
     // 获取音频时长
     innerAudioContext.onCanplay(() => {
       innerAudioContext.duration
@@ -127,6 +104,36 @@ class FileItem extends Taro.Component {
         currentTime: this.state.durationTime,
       })
     })
+
+    this.initAudio(this.props.file)
+  }
+
+  componentWillReceiveProps(nextProps: PageOwnProps) {
+    if (nextProps.active !== this.props.active && !nextProps.active) {
+      this.onStop()
+      this.innerAudioContext.destroy()
+    }
+
+    if (nextProps.active !== this.props.active && nextProps.active) {
+      this.initAudio(nextProps.file)
+    }
+
+    this.setState({
+      fileState: nextProps.file,
+    })
+  }
+
+  // 初始化音频数据
+  initAudio = (file: LocalFileInfo) => {
+    // this.innerAudioContext.src = reverse ? file.path : file.reverseFilePath
+    this.changePlayUrl(file)
+    this.setState({
+      fileState: file,
+    })
+  }
+
+  changePlayUrl = (file: LocalFileInfo, reverse?: boolean) => {
+    this.innerAudioContext.src = reverse ? file.reverseFilePath : file.path
   }
 
   // 格式化日期
@@ -139,11 +146,25 @@ class FileItem extends Taro.Component {
   }
 
   // 播放
-  onPlay = () => {
+  onPlay = (activeIndex: number) => {
+    const { fileState } = this.state
+    if (!fileState) {
+      return
+    }
     this.setState({
-      playing: true,
+      playing: false,
+      currentTime: 0,
     })
-    this.innerAudioContext.play()
+
+    this.changePlayUrl(fileState, activeIndex !== 0)
+
+    setTimeout(() => {
+      this.setState({
+        activeIndex,
+        playing: true,
+      })
+      this.innerAudioContext.play()
+    }, 100)
   }
 
   // 暂停播放
@@ -161,80 +182,82 @@ class FileItem extends Taro.Component {
   }
 
   onShowDetail = () => {
-    if (!this.props.active) {
-      this.props.onShowDetail()
-    }
+    const { fileState } = this.state
+    const createTime = fileState && fileState.file.createTime || -1
+    // console.log(this.props.active ? -1 : createTime)
+    this.props.onShowDetail(this.props.active ? -1 : createTime)
   }
 
   // 本地文件删除
-  onDelete = () => {
-    const { fileState } = this.state
-    if (!fileState) {
-      return
-    }
-    // console.log(fileState.filePath)
-    Taro.removeSavedFile({
-      filePath: fileState.filePath,
-      complete: () => {
-        this.props.shouldUpdateFileList()
-      },
-    })
-  }
+  // onDelete = () => {
+  //   const { fileState } = this.state
+  //   if (!fileState) {
+  //     return
+  //   }
+  //   // console.log(fileState.filePath)
+  //   Taro.removeSavedFile({
+  //     filePath: fileState.filePath,
+  //     complete: () => {
+  //       this.props.shouldUpdateFileList()
+  //     },
+  //   })
+  // }
 
   // 音频反转
-  onReverse = () => {
-    const { fileState } = this.state
+  // onReverse = () => {
+  //   const { fileState } = this.state
 
-    if (!fileState) {
-      return
-    }
+  //   if (!fileState) {
+  //     return
+  //   }
 
-    Taro.uploadFile({
-      url: `${API_URL}/api/file/mp3/reverse`, //仅为示例，非真实的接口地址
-      filePath: fileState.filePath,
-      name: 'file',
-      formData: {
-        'msg': 'voice',
-      },
-      header: {
-        'Content-Type': 'multipart/form-data',
-        'accept': 'application/json',
-      },
-      success: (res) => {
-        const data = JSON.parse(res.data)
-        const path = data.data.path
-        //do something
-        Taro.downloadFile({
-          url: `${API_URL}/${path}`,
-          success: (saveRes) => {
-            // 更新文件列表
-            // this.getFiles()
-            Taro.saveFile({
-              tempFilePath: saveRes.tempFilePath,
-              complete: () => {
-                this.props.shouldUpdateFileList()
-              },
-            })
+  //   Taro.uploadFile({
+  //     url: `${API_URL}/api/file/mp3/reverse`,
+  //     filePath: fileState.filePath,
+  //     name: 'file',
+  //     formData: {
+  //       'msg': 'voice',
+  //     },
+  //     header: {
+  //       'Content-Type': 'multipart/form-data',
+  //       'accept': 'application/json',
+  //     },
+  //     success: (res) => {
+  //       const data = JSON.parse(res.data)
+  //       const path = data.data.path
+  //       //do something
+  //       Taro.downloadFile({
+  //         url: `${API_URL}/${path}`,
+  //         success: (saveRes) => {
+  //           // 更新文件列表
+  //           // this.getFiles()
+  //           Taro.saveFile({
+  //             tempFilePath: saveRes.tempFilePath,
+  //             complete: () => {
+  //               this.props.shouldUpdateFileList()
+  //             },
+  //           })
 
-            // 清除文件
-            request({
-              url: `${API_URL}/api/file/mp3/reverse?path=${path}`,
-              method: 'DELETE',
-            })
-          },
-        })
-      },
-    })
-  }
+  //           // 清除文件
+  //           request({
+  //             url: `${API_URL}/api/file/mp3/reverse?path=${path}`,
+  //             method: 'DELETE',
+  //           })
+  //         },
+  //       })
+  //     },
+  //   })
+  // }
 
   render() {
-    const { fileState, durationTime, currentTime, playing } = this.state
+    const { fileState, durationTime, currentTime, playing, activeIndex } = this.state
     if (!fileState) {
       return <View></View>
     }
     const { active } = this.props
-
-    const { date, time } = this.getDate(fileState.createTime * 1000)
+    console.log(active)
+    // { fileState.file.size / 1000 } kb
+    const { date, time } = this.getDate(fileState.file.createTime * 1000)
     const durationTimeStr = getTimeStr(durationTime * 1000).str
     return <View className={classNames('file-item', { playing, active })}>
       <View className="head" onClick={this.onShowDetail}>
@@ -242,28 +265,44 @@ class FileItem extends Taro.Component {
         <View className="line2">
           <View className="date">{date}</View>
           {/* <View className="duration-time">{durationTimeStr}</View> */}
-          <View className="duration-time"> {fileState.size / 1000} kb</View>
+          <View className="duration-time"> {durationTimeStr}</View>
         </View>
       </View>
-      <View className="progress">
-        <View className="progress-bar">
-          <View className="mask" style={{
-            width: `${(currentTime / durationTime) * 100}%`,
-          }}
-          ></View>
-        </View>
-        <View className="progress-time">
-          <View className="progress-time__current">{getTimeStr(currentTime * 1000).str}</View>
-          <View className="progress-time__end">{durationTimeStr}</View>
-        </View>
-      </View>
-      <View className="buttons">
-        <View onClick={this.onPlay}>播放</View>
-        <View onClick={this.onPause}>暂停</View>
-        <View onClick={this.onStop}>停止</View>
-        <View onClick={this.onReverse}>反转</View>
-        <View onClick={this.onDelete}>删除</View>
-      </View>
+      {
+        [fileState.file, fileState.reverseFile].map((file, index) => {
+          const isActive = activeIndex === index
+          return <View className={classNames('controls', { active: isActive })} key={file.createTime}>
+            <View className="progress">
+              <View className="progress-bar">
+                <View className="mask" style={{
+                  width: isActive ? `${(currentTime / durationTime) * 100}%` : 0,
+                }}
+                ></View>
+              </View>
+              <View className="progress-time">
+                <View className="progress-time__current">{getTimeStr(isActive ? currentTime * 1000 : 0).str}</View>
+                <View className="progress-time__info">{index === 0 ? '原音频' : '反转音频'} ({file.size / 1000} kb)</View>
+                <View className="progress-time__end">{durationTimeStr}</View>
+              </View>
+            </View>
+            <View className="buttons">
+              {
+                !(isActive && playing) && <View onClick={this.onPlay.bind(this, index)}>
+                  <AtIcon value="play" size="30" color="#F00"></AtIcon>
+                </View>
+              }
+              {
+                isActive && playing && <View onClick={this.onPause}>
+                  <AtIcon value="pause" size="30" color="#F00"></AtIcon>
+                </View>
+              }
+              <View onClick={this.onStop}>停止</View>
+              {/* <View onClick={this.onReverse}>反转</View> */}
+              {/* <View onClick={this.onDelete}>删除</View> */}
+            </View>
+          </View>
+        })
+      }
     </View>
   }
 }

@@ -114,6 +114,5 @@ export const getTimeStr = (time: number) => {
 // env
 export const prod = process.env.NODE_ENV === 'production'
 
-console.log(process.env.NODE_ENV, 'process.env.NODE_ENV')
 export const API_URL = prod ? envConfig.API_URL : envConfig.API_URL_LOCAL
 // console.log(prod)

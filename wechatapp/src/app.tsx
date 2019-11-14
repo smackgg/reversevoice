@@ -4,13 +4,12 @@ import { Provider } from '@tarojs/redux'
 // import { getVipLevel, getSystemConfig } from '@/redux/actions/config'
 // import { checkToken } from '@/services/user'
 // import { getUserDetail } from '@/redux/actions/user'
-import { showToast, ShowToastParam } from './utils'
 
+import { showToast, ShowToastParam } from './utils'
 import Index from './pages/index'
 import { store } from './redux/store'
 import { UPDATE_GLOBAL_DATA } from './redux/actions/global'
-
-import './app.less'
+import './app.scss'
 
 
 // 如果需要在 h5 环境中开启 React Devtools

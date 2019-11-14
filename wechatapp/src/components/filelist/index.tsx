@@ -4,25 +4,18 @@ import PropTypes from 'prop-types'
 import { View } from '@tarojs/components'
 import { valueEqual } from '@/utils'
 import FileItem from '../fileitem'
-
-import './index.less'
-
-type File = {
-  createTime: number
-  filePath: string
-  size: number
-}
-
+import { File, LocalFileInfo } from '@/utils/reverse'
+import './index.scss'
 
 type PageOwnProps = {
-  fileList: File[]
+  fileList: LocalFileInfo[]
   shouldUpdateFileList: () => void
   recording: boolean
 }
 
 type PageState = {
   activeKey: number
-  fileListState?: File[]
+  fileListState?: LocalFileInfo[]
 }
 
 interface FileList {
@@ -45,9 +38,9 @@ class FileList extends Taro.Component {
     recording: false,
   }
 
-  onShowDetail = (key: number) => {
+  onShowDetail = (activeKey: number) => {
     this.setState({
-      activeKey: key,
+      activeKey,
     })
   }
 
@@ -68,12 +61,12 @@ class FileList extends Taro.Component {
 
     return <View className="file-list">
         {
-          fileList.map((file: File, index: number) => <FileItem
+          fileList.map((file) => <FileItem
             shouldUpdateFileList={shouldUpdateFileList}
-            onShowDetail={this.onShowDetail.bind(this, file.createTime )}
-            active={file.createTime === activeKey}
+            onShowDetail={this.onShowDetail}
+            active={file.file.createTime === activeKey}
             file={file}
-            key={file.createTime}
+            key={file.index}
           />)
         }
     </View>
