@@ -2,7 +2,7 @@
   "miniprogramRoot": "./dist",
   "projectname": "./wechatapp",
   "description": "reversevoice-wchatapp",
-  "appid": "wxaed2c04fd10b6e1a",
+  "appid": "wx671176e654e964f0",
   "setting": {
     "urlCheck": true,
     "es6": false,

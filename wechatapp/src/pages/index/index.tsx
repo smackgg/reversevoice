@@ -115,9 +115,12 @@ class Index extends Component {
     this.setState({
       recording: !recording,
     })
+
     // 开始录音
     if (!recording) {
-      this.startRecord()
+      setTimeout(() => {
+        this.startRecord()
+      }, 200)
     } else {
       this.stopRecord()
     }
@@ -129,6 +132,7 @@ class Index extends Component {
       format: 'mp3',
       // sampleRate: '8000',
       duration: 15000,
+      audioSource: 'buildInMic',
     })
 
     // 计时器
@@ -163,11 +167,11 @@ class Index extends Component {
   render() {
     const { recording, time, fileList } = this.state
     const { s, ms } = getTimeStr(time)
-
+    // console.log(fileList)
     return (
       <View className={classNames('index', { active: recording })}>
         {
-          fileList && <FileList shouldUpdateFileList={this.shouldUpdateFileList} fileList={fileList} />
+          fileList && <FileList recording={recording} shouldUpdateFileList={this.shouldUpdateFileList} fileList={fileList} />
         }
         <View className="record">
           {

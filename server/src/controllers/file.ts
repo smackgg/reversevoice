@@ -1,9 +1,10 @@
 import { path as ffprobePath } from '@ffmpeg-installer/ffmpeg'
 import uuidv4 from 'uuid/v4'
 import ffmpeg from 'fluent-ffmpeg'
-import upLoadFile from '../util/qiniu'
+// import upLoadFile from '../util/qiniu'
 import fs from 'fs'
 import dateFormat from '../util/dateFormat'
+import { cErr } from '../util'
 
 // const ffprobePath = require('@ffprobe-installer/ffprobe').path;
 // const ffmpeg = require('fluent-ffmpeg')
@@ -17,7 +18,8 @@ type QiniuReply = {
   key: string;
 }
 
-const voiceHandler = (filepath: string): Promise<string> => new Promise((resolve) => {
+// 反转视频
+const reverseVoice = (filepath: string): Promise<string> => new Promise((resolve, reject) => {
   const folderPath = dateFormat(new Date(), 'YYYY_MM_dd') + '/'
   const publicPath = path.resolve((__dirname + '../../public/' + folderPath))
   if (!fs.existsSync(publicPath)) {
@@ -44,6 +46,7 @@ const voiceHandler = (filepath: string): Promise<string> => new Promise((resolve
       console.log('upload-file-progress', progress.percent)
     })
     .on('error', (err) => {
+      reject()
       // this.sendErrorMessageToReander('Ffmpeg has been killed' + err.message);
       console.log(`Ffmpeg has been killed${err.message}`)
     })
@@ -54,32 +57,32 @@ const voiceHandler = (filepath: string): Promise<string> => new Promise((resolve
     })
 })
 /**
- * GET /login
- * Login page.
+ * POST /api/mp3/reverse
+ * 反转音频
  */
 export const postMp3Reverse = async (ctx: any) => {
-  // console.log(ctx.request.body)
-  // console.log(ctx.request.files[0])
   const file = ctx.request.files[0]
   if (!file) {
     return ctx.throw(400, '请上传正确的文件')
   }
-  try {
-    // const reply = await voiceHandler(file.path)
-    const saveFilePath = await voiceHandler(file.path)
-
-    ctx.body = {
-      data: {
-        // path: `http://game.smackgg.cn/${reply.key}`,
-        path: saveFilePath,
-      },
-      code: 0,
-    }
-  } catch (error) {
-    ctx.throw(500, error)
+  // const reply = await reverseVoice(file.path)
+  const [err, saveFilePath] = await cErr(reverseVoice(file.path))
+  if (err) {
+    ctx.throw(500, err)
+    return
+  }
+  ctx.body = {
+    data: {
+      path: saveFilePath,
+    },
+    code: 0,
   }
 }
 
+/**
+ * DELETE /api/mp3/reverse
+ * 删除临时资源.
+ */
 export const deleteMp3Reverse = async (ctx: any) => {
   const { path: filepath } = ctx.query
 

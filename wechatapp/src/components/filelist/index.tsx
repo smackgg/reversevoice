@@ -17,6 +17,7 @@ type File = {
 type PageOwnProps = {
   fileList: File[]
   shouldUpdateFileList: () => void
+  recording: boolean
 }
 
 type PageState = {
@@ -32,6 +33,7 @@ class FileList extends Taro.Component {
   static propTypes = {
     fileList: PropTypes.array,
     shouldUpdateFileList: PropTypes.func,
+    recording: PropTypes.bool,
   }
 
   state: PageState = {
@@ -40,6 +42,7 @@ class FileList extends Taro.Component {
 
   static defaultProps = {
     fileList: [],
+    recording: false,
   }
 
   onShowDetail = (key: number) => {
@@ -48,43 +51,29 @@ class FileList extends Taro.Component {
     })
   }
 
-  componentDidMount() {
-    this.setState({
-      fileListState: this.props.fileList,
-    })
-  }
-
   componentWillReceiveProps(nextProps: PageOwnProps) {
-    // if (!valueEqual(nextProps.fileList, this.props.fileList)) {
-    //   this.setState({
-    //     fileListState: undefined,
-    //     // activeKey: -1,
-    //   }, () => {
-    //     setTimeout(() => {
-    //       this.setState({
-    //         fileListState: nextProps.fileList,
-    //       })
-    //     }, 1000)
-    //   })
-    // }
+    if (nextProps.recording !== this.props.recording && nextProps.recording) {
+      this.setState({
+        activeKey: -1,
+      })
+    }
   }
 
   render() {
-    const { fileListState, activeKey } = this.state
-    if (!fileListState) {
+    const { activeKey } = this.state
+    const { shouldUpdateFileList, fileList } = this.props
+    if (!fileList) {
       return <View></View>
     }
-    const { shouldUpdateFileList, fileList } = this.props
-
 
     return <View className="file-list">
         {
-          fileList.map((file: File, index: number) => <FileItem 
-            shouldUpdateFileList={shouldUpdateFileList} 
-            onShowDetail={this.onShowDetail.bind(this, file.createTime )} 
-            active={file.createTime === activeKey} 
-            file={file} 
-            key={file.createTime} 
+          fileList.map((file: File, index: number) => <FileItem
+            shouldUpdateFileList={shouldUpdateFileList}
+            onShowDetail={this.onShowDetail.bind(this, file.createTime )}
+            active={file.createTime === activeKey}
+            file={file}
+            key={file.createTime}
           />)
         }
     </View>

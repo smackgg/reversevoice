@@ -80,9 +80,16 @@ class FileItem extends Taro.Component {
   componentWillReceiveProps(nextProps: PageOwnProps) {
     if (nextProps.active !== this.props.active && !nextProps.active) {
       this.onStop()
+      this.innerAudioContext.destroy()
     }
 
-    this.initAudio(nextProps.file)
+    if (nextProps.active !== this.props.active && nextProps.active) {
+      this.initAudio(nextProps.file)
+    }
+
+    this.setState({
+      fileState: nextProps.file,
+    })
   }
 
   // 初始化音频数据
@@ -94,7 +101,7 @@ class FileItem extends Taro.Component {
     this.setState({
       fileState: file,
     })
-    console.log(innerAudioContext)
+
     // 获取音频时长
     innerAudioContext.onCanplay(() => {
       innerAudioContext.duration
@@ -234,7 +241,8 @@ class FileItem extends Taro.Component {
         <View className="time">{time}</View>
         <View className="line2">
           <View className="date">{date}</View>
-          <View className="duration-time">{durationTimeStr}</View>
+          {/* <View className="duration-time">{durationTimeStr}</View> */}
+          <View className="duration-time"> {fileState.size / 1000} kb</View>
         </View>
       </View>
       <View className="progress">
