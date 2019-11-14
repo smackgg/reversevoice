@@ -1,5 +1,6 @@
 // @import "~taro-ui/dist/style/index.scss";
-@import './var.less';
+@import './var.scss';
+@import "~taro-ui/dist/style/index.scss";
 @import "./assets/font/font.scss";
 
 view,
@@ -34,5 +35,5 @@ button {
 }
 
 .text-color-red {
-  color: @text-color-red;
+  color: $text-color-red;
 }
