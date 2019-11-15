@@ -50,6 +50,11 @@ class FileList extends Taro.Component {
         activeKey: -1,
       })
     }
+    if (nextProps.fileList.length !== this.props.fileList.length && nextProps.fileList[0] && nextProps.fileList[0].new) {
+      this.setState({
+        activeKey: nextProps.fileList[0].file && nextProps.fileList[0].file.createTime,
+      })
+    }
   }
 
   render() {
@@ -64,7 +69,7 @@ class FileList extends Taro.Component {
           fileList.map((file) => <FileItem
             shouldUpdateFileList={shouldUpdateFileList}
             onShowDetail={this.onShowDetail}
-            active={file.file.createTime === activeKey}
+            active={!!file.file && file.file.createTime === activeKey}
             file={file}
             key={file.index}
           />)

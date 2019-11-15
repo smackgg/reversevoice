@@ -7,6 +7,7 @@ import classNames from 'classnames'
 import { getTimeStr } from '@/utils'
 import { saveFile, reverse, getFiles } from '@/utils/reverse'
 import { FileList } from '@/components'
+import { getRecordAuth } from '@/utils/auth'
 
 import './index.scss'
 
@@ -64,6 +65,7 @@ class Index extends Component {
     navigationBarTitleText: '首页',
   }
 
+  audioSource: string = 'auto'
   timer?: number
   RecorderManager: RecorderManager
   tempFilePath?: string
@@ -74,14 +76,43 @@ class Index extends Component {
     fileList: undefined,
   }
 
+
   componentWillMount() {
     this.getFiles()
+
+    // 获取麦克风录音信息
+    Taro.getAvailableAudioSources({
+      success: (res) => {
+        const audioSources = res.audioSources
+        console.log(audioSources, audioSources.includes('buildInMic'))
+        if (audioSources.includes('buildInMic')) {
+          this.audioSource = 'buildInMic'
+          return
+        }
+        if (audioSources.includes('mic')) {
+          this.audioSource = 'mic'
+          return
+        }
+      },
+    })
+
     this.RecorderManager = Taro.getRecorderManager()
     this.RecorderManager.onStop(async (res) => {
-      // 保存文件
-      const fileInfo = await saveFile(res.tempFilePath)
-      await reverse(fileInfo)
-      this.getFiles()
+      Taro.showLoading({ title: '保存录音中...', mask: true })
+      try {
+        // 保存文件
+        const fileInfo = await saveFile(res.tempFilePath)
+        await reverse(fileInfo)
+        await this.getFiles(true)
+        Taro.showToast({
+          title: '保存录音成功',
+        })
+      } catch (error) {
+        Taro.showToast({
+          title: '保存录音失败，请重新录音',
+        })
+      }
+      Taro.hideLoading()
     })
   }
 
@@ -89,14 +120,15 @@ class Index extends Component {
 
   }
 
-  getFiles = async () => {
+  getFiles = async (record?: boolean) => {
     const fileList = await getFiles()
-    Taro.getSavedFileList({
-      success: (res: any) => {
-        this.setState({
-          fileList,
-        })
-      },
+
+    if (record) {
+      fileList[0].new = true
+    }
+
+    this.setState({
+      fileList,
     })
   }
 
@@ -108,7 +140,12 @@ class Index extends Component {
   }
 
   // 开始录音
-  onRecordHandler = () => {
+  onRecordHandler = async () => {
+    const recordAuth = await getRecordAuth()
+
+    if (!recordAuth) {
+      return
+    }
     const { recording } = this.state
     this.setState({
       recording: !recording,
@@ -126,11 +163,12 @@ class Index extends Component {
 
   // 开始录音
   startRecord = () => {
+    console.log(this.audioSource)
     this.RecorderManager.start({
       format: 'mp3',
       // sampleRate: '8000',
       duration: 15000,
-      audioSource: 'buildInMic',
+      audioSource: this.audioSource,
     })
 
     // 计时器

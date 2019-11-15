@@ -1,14 +1,14 @@
 import { ComponentClass } from 'react'
 import Taro, { InnerAudioContext } from '@tarojs/taro'
 import PropTypes from 'prop-types'
-import { View } from '@tarojs/components'
+import { View, Text } from '@tarojs/components'
 import moment from 'moment'
 import { getTimeStr } from '@/utils'
 import classNames from 'classnames'
-import { LocalFileInfo } from '@/utils/reverse'
+import { LocalFileInfo, deleteFile } from '@/utils/reverse'
 import { AtIcon } from 'taro-ui'
 
-import './index.less'
+import './index.scss'
 
 moment.locale('zh-cn', {
   meridiem: (hour, minute) => {
@@ -44,7 +44,7 @@ type PageState = {
   fileState?: LocalFileInfo
   durationTime: number
   currentTime: number
-  playing: boolean
+  playStatus: 0 | 1 | 2 // 0-停止 1-播放中 2-暂停
   activeIndex: number
 }
 
@@ -72,13 +72,42 @@ class FileItem extends Taro.Component {
     fileState: undefined,
     durationTime: 0,
     currentTime: 0,
-    playing: false,
+    playStatus: 0,
     activeIndex: 0,
   }
 
   componentDidMount() {
+    this.initAudio(this.props.file)
+  }
+
+  componentWillReceiveProps(nextProps: PageOwnProps) {
+    if (nextProps.active !== this.props.active && !nextProps.active) {
+      this.onStop()
+      this.innerAudioContext.destroy()
+    }
+
+    if (nextProps.active !== this.props.active && nextProps.active) {
+      this.initAudio(nextProps.file)
+    }
+
+    this.setState({
+      fileState: nextProps.file,
+    })
+  }
+
+  // 初始化音频数据
+  initAudio = (file: LocalFileInfo) => {
+    if (this.innerAudioContext ) {
+      this.innerAudioContext.offCanplay()
+      this.innerAudioContext.offPlay()
+      this.innerAudioContext.offTimeUpdate()
+      this.innerAudioContext.offEnded()
+      this.innerAudioContext.destroy()
+    }
     let innerAudioContext = Taro.createInnerAudioContext()
     this.innerAudioContext = innerAudioContext
+    this.changePlayUrl(file)
+
     // 获取音频时长
     innerAudioContext.onCanplay(() => {
       innerAudioContext.duration
@@ -100,33 +129,12 @@ class FileItem extends Taro.Component {
       })
     })
     innerAudioContext.onEnded(() => {
+      this.onStop()
       this.setState({
         currentTime: this.state.durationTime,
       })
     })
-
-    this.initAudio(this.props.file)
-  }
-
-  componentWillReceiveProps(nextProps: PageOwnProps) {
-    if (nextProps.active !== this.props.active && !nextProps.active) {
-      this.onStop()
-      this.innerAudioContext.destroy()
-    }
-
-    if (nextProps.active !== this.props.active && nextProps.active) {
-      this.initAudio(nextProps.file)
-    }
-
-    this.setState({
-      fileState: nextProps.file,
-    })
-  }
-
-  // 初始化音频数据
-  initAudio = (file: LocalFileInfo) => {
     // this.innerAudioContext.src = reverse ? file.path : file.reverseFilePath
-    this.changePlayUrl(file)
     this.setState({
       fileState: file,
     })
@@ -147,21 +155,25 @@ class FileItem extends Taro.Component {
 
   // 播放
   onPlay = (activeIndex: number) => {
-    const { fileState } = this.state
+    const { fileState, playStatus } = this.state
     if (!fileState) {
       return
     }
-    this.setState({
-      playing: false,
-      currentTime: 0,
-    })
+
+    const nextState: any = {
+      playStatus: 0,
+    }
+    if (playStatus === 0 || activeIndex !== this.state.activeIndex) {
+      nextState.currentTime = 0
+    }
+    this.setState(nextState)
 
     this.changePlayUrl(fileState, activeIndex !== 0)
 
     setTimeout(() => {
       this.setState({
         activeIndex,
-        playing: true,
+        playStatus: 1,
       })
       this.innerAudioContext.play()
     }, 100)
@@ -169,13 +181,16 @@ class FileItem extends Taro.Component {
 
   // 暂停播放
   onPause = () => {
+    this.setState({
+      playStatus: 2,
+    })
     this.innerAudioContext.pause()
   }
 
   // 停止播放
   onStop = () => {
     this.setState({
-      playing: false,
+      playStatus: 0,
       currentTime: 0,
     })
     this.innerAudioContext.stop()
@@ -183,25 +198,27 @@ class FileItem extends Taro.Component {
 
   onShowDetail = () => {
     const { fileState } = this.state
-    const createTime = fileState && fileState.file.createTime || -1
+    const createTime = fileState && fileState.file && fileState.file.createTime || -1
     // console.log(this.props.active ? -1 : createTime)
     this.props.onShowDetail(this.props.active ? -1 : createTime)
   }
 
   // 本地文件删除
-  // onDelete = () => {
-  //   const { fileState } = this.state
-  //   if (!fileState) {
-  //     return
-  //   }
-  //   // console.log(fileState.filePath)
-  //   Taro.removeSavedFile({
-  //     filePath: fileState.filePath,
-  //     complete: () => {
-  //       this.props.shouldUpdateFileList()
-  //     },
-  //   })
-  // }
+  onDelete = async () => {
+    const { fileState } = this.state
+    if (!fileState) {
+      return
+    }
+    await deleteFile(fileState)
+    this.props.shouldUpdateFileList()
+  }
+
+  onShare = async () => {
+    Taro.showToast({
+      title: '分享功能正在开发中~',
+      icon: 'none',
+    })
+  }
 
   // 音频反转
   // onReverse = () => {
@@ -250,18 +267,18 @@ class FileItem extends Taro.Component {
   // }
 
   render() {
-    const { fileState, durationTime, currentTime, playing, activeIndex } = this.state
-    if (!fileState) {
+    const { fileState, durationTime, currentTime, playStatus, activeIndex } = this.state
+    if (!fileState || !fileState.file || !fileState.reverseFile) {
       return <View></View>
     }
     const { active } = this.props
-    console.log(active)
+    // console.log(active)
     // { fileState.file.size / 1000 } kb
     const { date, time } = this.getDate(fileState.file.createTime * 1000)
     const durationTimeStr = getTimeStr(durationTime * 1000).str
-    return <View className={classNames('file-item', { playing, active })}>
+    return <View className={classNames('file-item', { playing: playStatus === 1, active })}>
       <View className="head" onClick={this.onShowDetail}>
-        <View className="time">{time}</View>
+        <View className="time">{fileState.new && false && <Text className="new-tag">new</Text>} {time}</View>
         <View className="line2">
           <View className="date">{date}</View>
           {/* <View className="duration-time">{durationTimeStr}</View> */}
@@ -287,22 +304,30 @@ class FileItem extends Taro.Component {
             </View>
             <View className="buttons">
               {
-                !(isActive && playing) && <View onClick={this.onPlay.bind(this, index)}>
-                  <AtIcon value="play" size="30" color="#F00"></AtIcon>
+                !(isActive && playStatus === 1) && <View onClick={this.onPlay.bind(this, index)}>
+                  <AtIcon value="play" size="26" color="#000"></AtIcon>
                 </View>
               }
               {
-                isActive && playing && <View onClick={this.onPause}>
-                  <AtIcon value="pause" size="30" color="#F00"></AtIcon>
+                isActive && playStatus === 1 && <View onClick={this.onPause}>
+                  <AtIcon value="pause" size="26" color="#000"></AtIcon>
                 </View>
               }
-              <View onClick={this.onStop}>停止</View>
+              <View onClick={this.onStop}><AtIcon value="stop" size="22" color="#000"></AtIcon></View>
               {/* <View onClick={this.onReverse}>反转</View> */}
               {/* <View onClick={this.onDelete}>删除</View> */}
             </View>
           </View>
         })
       }
+      <View className="share-wrapper">
+        <View onClick={this.onShare} className="share-icon">
+          <AtIcon value="share" size="26" color="#000"></AtIcon>
+        </View>
+        <View onClick={this.onDelete}>
+          <AtIcon value="trash" size="26" color="#F00"></AtIcon>
+        </View>
+      </View>
     </View>
   }
 }
