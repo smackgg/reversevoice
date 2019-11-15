@@ -7,11 +7,9 @@ import classNames from 'classnames'
 import { getTimeStr } from '@/utils'
 import { saveFile, reverse, getFiles } from '@/utils/reverse'
 import { FileList } from '@/components'
+import withShare from '@/components/@withShare'
 import { getRecordAuth } from '@/utils/auth'
-
 import './index.scss'
-
-
 
 // #region 书写注意
 //
@@ -53,6 +51,7 @@ interface Index {
 }), (dispatch: any) => ({
 }))
 
+@withShare()
 class Index extends Component {
   /**
  * 指定config的类型声明为: Taro.Config
@@ -63,6 +62,11 @@ class Index extends Component {
  */
   config: Config = {
     navigationBarTitleText: '首页',
+  }
+
+  $shareOptions = {
+    title: '能听懂我说啥么？最近很火的倒放录音来啦~',
+    path: 'pages/index/index',
   }
 
   audioSource: string = 'auto'
@@ -76,10 +80,8 @@ class Index extends Component {
     fileList: undefined,
   }
 
-
   componentWillMount() {
     this.getFiles()
-
     // 获取麦克风录音信息
     Taro.getAvailableAudioSources({
       success: (res) => {
