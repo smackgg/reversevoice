@@ -26,7 +26,7 @@ var config = {
       plugins: ['transform-decorators-legacy', 'transform-class-properties', 'transform-object-rest-spread'],
     },
     sass: {
-      resource: path.resolve(__dirname, '..', 'src/var.less'),
+      resource: path.resolve(__dirname, '..', 'src/var.scss'),
       projectDirectory: path.resolve(__dirname, '..'),
     },
   },
