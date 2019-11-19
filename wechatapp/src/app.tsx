@@ -9,6 +9,7 @@ import { showToast, ShowToastParam } from './utils'
 import Index from './pages/index'
 import { store } from './redux/store'
 import { UPDATE_GLOBAL_DATA } from './redux/actions/global'
+import { getUserDetail } from './redux/actions/user'
 import './app.scss'
 
 
@@ -85,6 +86,7 @@ class App extends Component {
   config: Config = {
     pages: [
       'pages/index/index',
+      'pages/authorize/index',
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -112,32 +114,11 @@ class App extends Component {
 
       await this.checkSession()
 
-      // 校验 token 是否有效
-      // const res = await checkToken()
-      // token 失效，清除本地 token 重新授权
-      // if (res.code !== 0) {
-      //   Taro.removeStorageSync('token')
-      //   await this.showToastP({
-      //     title: '登录失效，请重新授权~',
-      //     icon: 'loading',
-      //     duration: 1000,
-      //   })
-      //   return reject()
-      // }
+      const userDetail = await store.dispatch(getUserDetail())
 
-      // 获取用户详情
-      // const userDetail = await store.dispatch(getUserDetail())
-
-      // 强制用户绑定手机号
-      // if (requireBindMobile && !userDetail.mobile) {
-      //   await this.showToastP({
-      //     title: '需要授权并绑定手机号~',
-      //     icon: 'none',
-      //     duration: 2000,
-      //   })
-      //   return reject()
-      // }
-
+      if (!userDetail.isLogin) {
+        return reject()
+      }
       resolve()
     } catch (e) {
       reject(e)

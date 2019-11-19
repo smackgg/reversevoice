@@ -1,6 +1,7 @@
 import Taro from '@tarojs/taro'
+import { deleteFile as deleteFileApi } from '@/services/file'
+
 import { API_URL } from './'
-import request from './request'
 
 export type File = {
   createTime: number
@@ -130,10 +131,7 @@ export const reverse = (reverseFile: LocalFileInfo): Promise<any> => {
             })
 
             // 清除文件
-            request({
-              url: `${API_URL}/api/file/mp3/reverse?path=${path}`,
-              method: 'DELETE',
-            })
+            deleteFileApi({ path })
           },
         })
       },
@@ -175,7 +173,6 @@ export const deleteFile = async (file: LocalFileInfo) => {
 
   try {
     let files = await getLSFiles()
-    console.log(files)
 
     await Promise.all([
       removeSavedFilePromise(file.file.filePath),

@@ -1,0 +1,72 @@
+.container {
+  .top {
+    height: 45vh;
+    width: 100%;
+    // background: #1da836;
+    background: $wechat-color-primary;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 30rpx;
+    color: #fff;
+
+    .safe-icon {
+      width: 250rpx;
+      margin: 60rpx 0 40rpx;
+    }
+  }
+
+  .checkbox {
+    color: #a7a7a7;
+    font-size: 32rpx;
+    margin: 60rpx 0 0 60rpx;
+  }
+
+  .button {
+    margin: 0 60rpx;
+    height: 80rpx;
+    line-height: 80rpx;
+    font-size: 30rpx;
+    background: $wechat-color-primary;
+    color: $color-white;
+    // background: #1da836;
+    // border-color: #1da836;
+  }
+
+  .info1 {
+    color: $link-color;
+    text-decoration: underline;
+    text-align: center;
+    margin-top: 20rpx;
+  }
+
+  .info2 {
+    color: $text-color-gray;
+    font-size: 22rpx;
+    margin-bottom: 90rpx;
+    margin-left: 60rpx;
+    margin-top: 10rpx;
+  }
+
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 34rpx;
+
+    .success-icon {
+      width: 100rpx;
+      margin: 20rpx 0 30rpx;
+    }
+
+    .modal-info {
+      color: #a7a7a7;
+      width: 80%;
+      border-top: 1rpx solid #a7a7a7;
+      padding: 20rpx 0 20rpx;
+      margin-top: 20rpx;
+      font-size: 26rpx;
+      text-align: center;
+    }
+  }
+}

@@ -7,24 +7,7 @@ import {
 
 
 export type UserDetail = {
-  avatarUrl: string
-  city?: string
-  dateAdd?: string
-  dateLogin?: string
-  id?: number
-  ipAdd?: string
-  ipLogin?: string
-  isIdcardCheck?: boolean
-  isSeller?: boolean
-  levelId?: number,
-  levelRenew?: false
-  mobile?: string
-  nick?: string
-  province?: string
-  source?: number
-  sourceStr?: string
-  status?: 0
-  statusStr?: string
+  isLogin: boolean
 }
 
 export type INITIAL_STATE = {
@@ -33,7 +16,7 @@ export type INITIAL_STATE = {
 
 var INITIAL_STATE: INITIAL_STATE = {
   userDetail: {
-    avatarUrl: '',
+    isLogin: false,
   },
 }
 
