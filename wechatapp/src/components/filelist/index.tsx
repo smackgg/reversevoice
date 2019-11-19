@@ -2,9 +2,8 @@ import { ComponentClass } from 'react'
 import Taro from '@tarojs/taro'
 import PropTypes from 'prop-types'
 import { View } from '@tarojs/components'
-import { valueEqual } from '@/utils'
+import { LocalFileInfo } from '@/utils/reverse'
 import FileItem from '../fileitem'
-import { File, LocalFileInfo } from '@/utils/reverse'
 import './index.scss'
 
 type PageOwnProps = {

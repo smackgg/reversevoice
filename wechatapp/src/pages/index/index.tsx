@@ -1,11 +1,11 @@
 import { ComponentClass } from 'react'
-import Taro, { Component, Config, RecorderManager, request } from '@tarojs/taro'
+import Taro, { Component, Config, RecorderManager } from '@tarojs/taro'
 import { connect } from '@tarojs/redux'
-import { View, Image, Text, Block } from '@tarojs/components'
+import { View, Block } from '@tarojs/components'
 import classNames from 'classnames'
 // import { AtIcon } from 'taro-ui'
 import { getTimeStr } from '@/utils'
-import { saveFile, reverse, getFiles } from '@/utils/reverse'
+import { saveFile, reverse, getFiles, LocalFileInfo } from '@/utils/reverse'
 import { FileList } from '@/components'
 import withShare from '@/components/@withShare'
 import { getRecordAuth } from '@/utils/auth'
@@ -29,16 +29,11 @@ type PageDispatchProps = {
 
 type PageOwnProps = {}
 
-type File = {
-  createTime: number
-  filePath: string
-  size: number
-}
 
 type PageState = {
   recording: boolean,
   time: number,
-  fileList?: File[],
+  fileList?: LocalFileInfo[],
 }
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
@@ -86,7 +81,7 @@ class Index extends Component {
     Taro.getAvailableAudioSources({
       success: (res) => {
         const audioSources = res.audioSources
-        console.log(audioSources, audioSources.includes('buildInMic'))
+
         if (audioSources.includes('buildInMic')) {
           this.audioSource = 'buildInMic'
           return
@@ -165,7 +160,7 @@ class Index extends Component {
 
   // 开始录音
   startRecord = () => {
-    console.log(this.audioSource)
+
     this.RecorderManager.start({
       format: 'mp3',
       // sampleRate: '8000',

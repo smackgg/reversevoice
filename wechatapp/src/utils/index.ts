@@ -1,4 +1,4 @@
-import Taro, { requirePlugin } from '@tarojs/taro'
+import Taro from '@tarojs/taro'
 import envConfig from './env'
 
 export { default as dateFormat } from './dateFormat'
@@ -34,25 +34,6 @@ export const cError = async (fn: Promise<any>): Promise<[null | { msg: string, c
 
 // 价格处理
 export const priceToFloat = (price?: number): string => price ? price.toFixed(2) : ''
-
-// 设置购物车小红点
-export const setCartBadge = () => {
-  try {
-    const { shopNum } = Taro.getStorageSync('shopCartInfo') || {}
-    if (shopNum && shopNum > 0) {
-      Taro.setTabBarBadge({
-        index: 2,
-        text: String(shopNum),
-      })
-    } else {
-      Taro.removeTabBarBadge({
-        index: 2,
-      })
-    }
-  } catch (error) {
-
-  }
-}
 
 // valueEqual from https://www.npmjs.com/package/value-equal
 const valueOf = (obj: any) => obj.valueOf ? obj.valueOf() : Object.prototype.valueOf.call(obj)
