@@ -1,11 +1,14 @@
 import Koa from 'koa'
 import compression from 'koa-compress'
-import session from 'koa-session'
+// import session from 'koa-session'
+import session from 'koa-session-minimal'
 import bodyParser from 'koa-better-body'
 import lusca from 'koa-lusca'
 import MongoStore from 'koa-generic-session-mongo'
+// import SessionStore from './config/store'
 import flash from 'koa-flash'
-import path from 'path'
+// import path from 'path'
+import logger from 'koa-logger'
 import mongoose from 'mongoose'
 import bluebird from 'bluebird'
 import views from 'koa-views'
@@ -40,8 +43,14 @@ app.use(bodyParser({
   multipart: true,
   querystring: require('qs'),
 }))
+app.use(logger())
 
-app.use(session({ store: new MongoStore({ url: mongoUrl }) }, app))
+app.use(session({
+  store: new MongoStore({
+    url: mongoUrl,
+  }),
+}))
+
 app.use(flash())
 app.use(lusca.xframe('SAMEORIGIN'))
 app.use(lusca.xssProtection(true))
