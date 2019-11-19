@@ -5,6 +5,7 @@ import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs'
 import dateFormat from '../util/dateFormat'
 import { cErr } from '../util'
+import Errors from '../errors'
 
 // const ffprobePath = require('@ffprobe-installer/ffprobe').path;
 // const ffmpeg = require('fluent-ffmpeg')
@@ -85,7 +86,12 @@ export const postMp3Reverse = async (ctx: any) => {
  */
 export const deleteMp3Reverse = async (ctx: any) => {
   const { path: filepath } = ctx.query
-
+  if (!/\.mp3/.test(filepath)) {
+    ctx.body = {
+      code: Errors['ERROR_FORMAT'],
+      message: 'ERROR_FORMAT',
+    }
+  }
   fs.unlinkSync(path.resolve((__dirname + '../../public/' + filepath)))
 
   ctx.body = {

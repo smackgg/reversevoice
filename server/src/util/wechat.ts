@@ -1,7 +1,6 @@
 import request from 'request'
 import crypto from 'crypto'
 import { APP_ID, APP_SECRET } from '../util/secrets'
-
 // 获取微信鉴权
 export const getWxAuthorization = (code: string): Promise<any> => new Promise((resolve, reject) => {
   request(`https://api.weixin.qq.com/sns/jscode2session?appid=${APP_ID}&secret=${APP_SECRET}&js_code=${code}&grant_type=authorization_code`, (error, response, body) => {
@@ -18,15 +17,13 @@ export const getWxAuthorization = (code: string): Promise<any> => new Promise((r
   })
 })
 
-// const crypto = require('crypto')
-
 export class WXBizDataCrypt {
   appId: string
   sessionKey: string
 
-  constructor(appId: string, sessionKey: string) {
-    this.appId = appId
+  constructor(sessionKey?: string, appId?: string) {
     this.sessionKey = sessionKey
+    this.appId = appId || APP_ID
   }
 
   decryptData(encryptedData: any, iv: any) {
@@ -45,16 +42,13 @@ export class WXBizDataCrypt {
 
       decoded = JSON.parse(decoded)
     } catch (err) {
-      throw new Error('Illegal Buffer')
+      throw new Error('Illegal Buffer 1 ')
     }
 
     if (decoded.watermark.appid !== this.appId) {
-      throw new Error('Illegal Buffer')
+      throw new Error('Illegal Buffer2 ')
     }
 
     return decoded
   }
 }
-
-module.exports = WXBizDataCrypt
-

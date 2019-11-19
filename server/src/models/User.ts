@@ -11,7 +11,7 @@ export type UserDocument = mongoose.Document & {
 
   profile: {
     nickName: string;
-    gender: string;
+    gender: number;
     language: string;
     city: string;
     province: string;
@@ -32,9 +32,13 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  unionId: {
+    type: String,
+    required: true,
+  },
   profile: {
     nickName: String,
-    gender: String,
+    gender: Number,
     language: String,
     city: String,
     province: String,

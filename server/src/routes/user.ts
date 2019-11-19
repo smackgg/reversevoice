@@ -1,5 +1,5 @@
 import Router from 'koa-router'
-import { getLogin } from '../controllers/user'
+import { postLogin, getUserInfo } from '../controllers/user'
 
 const router = new Router<null, { needWechatLogin(): void }>()
 
@@ -8,8 +8,8 @@ router.prefix('/api/user')
 //   await ctx.needWechatLogin()
 //   console.log(ctx)
 // }
-router.get('/login', async ctx => getLogin(ctx))
-
+router.post('/login', async ctx => postLogin(ctx))
+router.get('/detail', async ctx => getUserInfo(ctx))
 
 
 // router.put('/userinfo', async (ctx) => updateUserInfo(ctx))
