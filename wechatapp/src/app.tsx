@@ -100,7 +100,7 @@ class App extends Component {
       color: '#707070',
       selectedColor: '#1AAD19',
       borderStyle: 'white',
-      backgroundColor: '#fff',
+      backgroundColor: '#1b1c20',
       list: [
         {
           pagePath: 'pages/filelist/index',

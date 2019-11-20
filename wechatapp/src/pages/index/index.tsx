@@ -5,8 +5,7 @@ import { View, Block } from '@tarojs/components'
 import classNames from 'classnames'
 // import { AtIcon } from 'taro-ui'
 import { getTimeStr } from '@/utils'
-import { saveFile, reverse, getFiles, LocalFileInfo } from '@/utils/reverse'
-import { FileList } from '@/components'
+import { saveFile, reverse, LocalFileInfo } from '@/utils/reverse'
 import withShare from '@/components/@withShare'
 import { getRecordAuth } from '@/utils/auth'
 import { UserDetail } from '@/redux/reducers/user'
@@ -63,7 +62,7 @@ class Index extends Component {
   }
 
   $shareOptions = {
-    title: '能听懂我说啥么？最近很火的倒放录音来啦~',
+    title: '倒放挑战！能听懂我说啥么？最近很火的倒放录音来啦~',
     path: 'pages/index/index',
   }
 
@@ -79,7 +78,6 @@ class Index extends Component {
   }
 
   componentWillMount() {
-    this.getFiles()
     // 获取麦克风录音信息
     Taro.getAvailableAudioSources({
       success: (res) => {
@@ -103,13 +101,15 @@ class Index extends Component {
         // 保存文件
         const fileInfo = await saveFile(res.tempFilePath)
         await reverse(fileInfo)
-        await this.getFiles(true)
+        // await this.getFiles(true)
         Taro.showToast({
           title: '保存录音成功',
         })
       } catch (error) {
         Taro.showToast({
-          title: '保存录音失败，请重新录音',
+          title: '保存录音失败，请稍候重试',
+          icon: 'none',
+          duration: 2500,
         })
       }
       Taro.hideLoading()
@@ -118,25 +118,6 @@ class Index extends Component {
 
   componentDidShow() {
 
-  }
-
-  getFiles = async (record?: boolean) => {
-    const fileList = await getFiles()
-
-    if (record) {
-      fileList[0].new = true
-    }
-
-    this.setState({
-      fileList,
-    })
-  }
-
-  // 返回首页
-  goHome = () => {
-    Taro.redirectTo({
-      url: '/pages/entry/index',
-    })
   }
 
   // 开始录音
@@ -196,19 +177,12 @@ class Index extends Component {
     }
   }
 
-  shouldUpdateFileList = () => {
-    this.getFiles()
-  }
-
   render() {
-    const { recording, time, fileList } = this.state
+    const { recording, time } = this.state
     const { s, ms } = getTimeStr(time)
-    // console.log(fileList)
+
     return (
       <View className={classNames('index', { active: recording })}>
-        {
-          fileList && <FileList recording={recording} shouldUpdateFileList={this.shouldUpdateFileList} fileList={fileList} />
-        }
         <View className="record">
           {
               recording && <Block>

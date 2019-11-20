@@ -130,6 +130,7 @@ export const reverse = (reverseFile: LocalFileInfo): Promise<any> => {
         'Content-Type': 'multipart/form-data',
         'accept': 'application/json',
       },
+      fail: reject,
       success: (res) => {
         const data = JSON.parse(res.data)
         const path = data.data.path
@@ -145,9 +146,7 @@ export const reverse = (reverseFile: LocalFileInfo): Promise<any> => {
                 setLSRFile(res.savedFilePath, reverseFile.index)
                 resolve()
               },
-              fail: () => {
-                reject()
-              },
+              fail: reject,
             })
 
             // 清除文件
