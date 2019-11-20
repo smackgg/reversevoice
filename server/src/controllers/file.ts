@@ -31,13 +31,9 @@ const reverseVoice = (filepath: string, fileName: string): Promise<{
     fs.mkdirSync(publicPath)
   }
   const saveFilePath = '/reverse_' + uuidv4() + '_reverse.mp3'
-  const match = filepath.match(/\.durationTime=(\d+)/)
+  // const match = filepath.match(/\.durationTime=(\d+)/)
   // console.log(fileName)
-  const duration = Number(match && match[1] ? match[1] : 0)
-  ffmpeg.ffprobe(filepath, (err, metadata) => {
-    console.log(err, metadata, 111)
-  })
-  console.log(publicPath, filepath )
+  // const duration = Number(match && match[1] ? match[1] : 0)
   ffmpeg(filepath)
     .format('mp4')
     // .duration(duration / 1000)
@@ -66,7 +62,6 @@ const reverseVoice = (filepath: string, fileName: string): Promise<{
     // .duration(duration / 1000)
     .save(publicPath + saveFilePath)
     .on('end', (res) => {
-      console.log(res, '1111', publicPath + saveFilePath)
       ffmpeg.ffprobe(publicPath + saveFilePath, (err, metadata) => {
         // console.log(err, metadata)
         resolve({
