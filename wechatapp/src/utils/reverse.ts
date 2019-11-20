@@ -16,6 +16,8 @@ export type LocalFileInfo = {
   file?: File,
   reverseFile?: File,
   new?: boolean
+  roomId?: string,
+  otherName?: string,
 }
 
 // 获取本地缓存的列表
@@ -24,21 +26,6 @@ const getLSFiles = (): LocalFileInfo[]  => {
   return voiceFiles.sort((a: LocalFileInfo, b: LocalFileInfo) => a.index > b.index ? -1 : 1)
 }
 
-// 写入本地缓存的正常文件
-const setLSFile = (savedFilePath: string) => {
-  const voiceFiles = getLSFiles()
-  const index = voiceFiles.length > 0 ? voiceFiles[0].index + 1 : 1
-  const fileInfo = {
-    path: savedFilePath,
-    index,
-    reverseFilePath: '',
-  }
-
-  voiceFiles.unshift(fileInfo)
-
-  Taro.setStorageSync('voiceFiles', JSON.stringify(voiceFiles))
-  return fileInfo
-}
 
 // 获取本地缓存列表
 export const getFiles = (): Promise<LocalFileInfo[]> => new Promise((resolve, reject) => {
@@ -75,21 +62,54 @@ export const getFiles = (): Promise<LocalFileInfo[]> => new Promise((resolve, re
   })
 })
 
+// 写入本地缓存的正常文件
+const setLSFile = (savedFilePath: string) => {
+  const voiceFiles = getLSFiles()
+  const index = voiceFiles.length > 0 ? voiceFiles[0].index + 1 : 1
+  const fileInfo = {
+    path: savedFilePath,
+    index,
+    reverseFilePath: '',
+    fileDuration: getDurationByFilePath(savedFilePath),
+  }
+
+  voiceFiles.unshift(fileInfo)
+
+  Taro.setStorageSync('voiceFiles', JSON.stringify(voiceFiles))
+  return fileInfo
+}
+
 // 写入本地缓存的反转文件
 const setLSRFile = (savedFilePath: string, oriFileIndex: number) => {
   const voiceFiles = getLSFiles()
-
   Taro.setStorageSync('voiceFiles', JSON.stringify(voiceFiles.map((file: LocalFileInfo) => {
     if (file.index === oriFileIndex) {
       return {
         ...file,
         reverseFilePath: savedFilePath,
+        reverseFileDuration: getDurationByFilePath(savedFilePath),
       }
     }
     return file
   })))
 }
 
+// 获取音频文件长度
+export const getDurationByFilePath = (path: string) => {
+  const match = path.match(/\.durationTime=(\d+)/)
+  return match && match[1] ? match[1] : 0
+}
+
+// 设置本地 room id
+export const setLSRFileValue = (index: number, key: 'otherName' | 'roomId', value: string) => {
+  const voiceFiles = getLSFiles()
+  Taro.setStorageSync('voiceFiles', JSON.stringify(voiceFiles.map((file: LocalFileInfo) => {
+    if (file.index === index) {
+      file[key] = value
+    }
+    return file
+  })))
+}
 
 
 // 音频反转
@@ -193,4 +213,30 @@ export const deleteFile = async (file: LocalFileInfo) => {
 
   Taro.hideLoading()
 
+}
+
+// 上传文件
+export const uploadFile = (path: string): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    Taro.uploadFile({
+      url: `${API_URL}/api/file/mp3/upload`,
+      filePath: path,
+      name: 'file',
+      formData: {
+        'msg': 'voice',
+      },
+      header: {
+        'Content-Type': 'multipart/form-data',
+        'accept': 'application/json',
+      },
+      success: (res) => {
+        if (res.statusCode !== 200) {
+          return reject()
+        }
+        const data = JSON.parse(res.data)
+        resolve(data)
+      },
+      fail: reject,
+    })
+  })
 }
