@@ -25,6 +25,9 @@ export const APP_SECRET = process.env['APP_SECRET']
 export const QINIU_ACCESS_KEY = process.env['QINIU_ACCESS_KEY']
 export const QINIU_SECRET_KEY = process.env['QINIU_SECRET_KEY']
 
+// MEDIA_URL
+export const MEDIA_URL = process.env['MEDIA_URL']
+
 if (!SESSION_SECRET) {
   logger.error('No client secret. Set SESSION_SECRET environment variable.')
   process.exit(1)
