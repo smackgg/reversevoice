@@ -86,13 +86,47 @@ class App extends Component {
   config: Config = {
     pages: [
       'pages/index/index',
+      'pages/filelist/index',
       'pages/authorize/index',
+      'pages/room/index',
     ],
     window: {
       backgroundTextStyle: 'light',
       navigationBarBackgroundColor: '#fff',
       navigationBarTitleText: '',
       navigationBarTextStyle: 'black',
+    },
+    tabBar: {
+      color: '#707070',
+      selectedColor: '#1AAD19',
+      borderStyle: 'white',
+      backgroundColor: '#fff',
+      list: [
+        {
+          pagePath: 'pages/filelist/index',
+          iconPath: 'assets/images/files.png',
+          selectedIconPath: 'assets/images/files-selected.png',
+          text: '列表',
+        },
+        {
+          pagePath: 'pages/index/index',
+          iconPath: 'assets/images/record.png',
+          selectedIconPath: 'assets/images/record-selected.png',
+          text: '录音',
+        },
+        // {
+        //   pagePath: 'pages/shop-cart/index',
+        //   iconPath: 'assets/icon/shopcart.jpg',
+        //   selectedIconPath: 'assets/icon/shopcart-selected.jpg',
+        //   text: '购物车',
+        // },
+        {
+          pagePath: 'pages/index/index',
+          iconPath: 'assets/images/account.png',
+          selectedIconPath: 'assets/images/account-selected.png',
+          text: '我的',
+        },
+      ],
     },
   }
 
@@ -106,11 +140,11 @@ class App extends Component {
 
   checkLogin = (): Promise<any> => new Promise(async (resolve, reject) => {
     try {
-      const token = Taro.getStorageSync('token')
-      // 本地没有登录 token
-      if (!token) {
-        return reject()
-      }
+      // const token = Taro.getStorageSync('token')
+      // // 本地没有登录 token
+      // if (!token) {
+      //   return reject()
+      // }
 
       await this.checkSession()
 
