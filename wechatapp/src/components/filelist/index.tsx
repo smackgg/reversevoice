@@ -9,7 +9,6 @@ import './index.scss'
 type PageOwnProps = {
   fileList: LocalFileInfo[]
   shouldUpdateFileList: () => void
-  recording: boolean
 }
 
 type PageState = {
@@ -44,14 +43,14 @@ class FileList extends Taro.Component {
   }
 
   componentWillReceiveProps(nextProps: PageOwnProps) {
-    if (nextProps.recording !== this.props.recording && nextProps.recording) {
+    // if (nextProps.recording !== this.props.recording && nextProps.recording) {
+    //   this.setState({
+    //     activeKey: -1,
+    //   })
+    // }
+    if (nextProps.fileList.length !== this.props.fileList.length) {
       this.setState({
         activeKey: -1,
-      })
-    }
-    if (nextProps.fileList.length !== this.props.fileList.length && nextProps.fileList[0] && nextProps.fileList[0].new) {
-      this.setState({
-        activeKey: nextProps.fileList[0].file && nextProps.fileList[0].file.createTime,
       })
     }
   }

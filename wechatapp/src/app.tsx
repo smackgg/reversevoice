@@ -106,13 +106,13 @@ class App extends Component {
           pagePath: 'pages/filelist/index',
           iconPath: 'assets/images/files.png',
           selectedIconPath: 'assets/images/files-selected.png',
-          text: '列表',
+          text: '录音列表',
         },
         {
           pagePath: 'pages/index/index',
           iconPath: 'assets/images/record.png',
           selectedIconPath: 'assets/images/record-selected.png',
-          text: '录音',
+          text: '倒放挑战',
         },
         // {
         //   pagePath: 'pages/shop-cart/index',

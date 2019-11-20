@@ -9,6 +9,7 @@ import { saveFile, reverse, getFiles, LocalFileInfo } from '@/utils/reverse'
 import { FileList } from '@/components'
 import withShare from '@/components/@withShare'
 import { getRecordAuth } from '@/utils/auth'
+import { UserDetail } from '@/redux/reducers/user'
 import './index.scss'
 
 // #region 书写注意
@@ -22,12 +23,14 @@ import './index.scss'
 // #endregion
 
 type PageStateProps = {
+  userDeital: UserDetail
 }
 
 type PageDispatchProps = {
 }
 
-type PageOwnProps = {}
+type PageOwnProps = {
+}
 
 
 type PageState = {
@@ -42,8 +45,8 @@ interface Index {
   props: IProps
 }
 
-@connect(() => ({
-}), (dispatch: any) => ({
+@connect(({ user }) => ({
+  userDeital: user.userDeital,
 }))
 
 @withShare()
