@@ -6,9 +6,10 @@ import { QINIU_ACCESS_KEY, QINIU_SECRET_KEY } from './secrets'
 qiniu.config({
   access_key: QINIU_ACCESS_KEY,
   secret_key: QINIU_SECRET_KEY,
+  uploadUrl: 'up-z2.qiniup.com',
 })
 
-const upLoadFile = (bucket = 'game', filename: string, path: string) => {
+const upLoadFile = (bucket = 'revers-voice', filename: string, path: string) => {
   const imagesBucket = qiniu.bucket(bucket)
   return new Promise((resolve, reject) => {
     // console.log(imageName)
