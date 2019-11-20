@@ -21,6 +21,12 @@
   .time {
     font-size: 34rpx;
     margin-bottom: 5rpx;
+    display: flex;
+    justify-content: space-between;
+
+    .share-info {
+      color: $link-color;
+    }
   }
 
   .line2 {

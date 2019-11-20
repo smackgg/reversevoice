@@ -243,11 +243,12 @@ class FileItem extends Taro.Component {
         oriAudioUrl: file.data.path,
         revAudioUrl: reverseFile.data.path,
       })
-      console.log(res)
+      // console.log(res)
       const roomId = res.data.roomId
       setLSRFileValue(fileState.index, 'roomId', roomId)
 
-      this.props.shouldUpdateFileList && this.props.shouldUpdateFileList()
+      this.goSharePage(roomId)
+      // this.props.shouldUpdateFileList && this.props.shouldUpdateFileList()
     } catch (error) {
       Taro.showToast({
         title: '生成分享链接失败，请稍候重试~',
@@ -284,7 +285,14 @@ class FileItem extends Taro.Component {
     const durationTimeStr = getTimeStr(durationTime * 1000).str
     return <View className={classNames('file-item', { playing: playStatus === 1, active, 'no-icon': noIcon })}>
       <View className="head" onClick={this.onShowDetail}>
-        <View className="time">{fileState.new && false && <Text className="new-tag">new</Text>} {time}</View>
+        <View className="time">
+          <View>{fileState.new && false && <Text className="new-tag">new</Text>} {time}</View>
+          {
+            fileState.roomId && !noIcon && !active && <View onClick={this.goSharePage.bind(this, fileState.roomId)} className="share-info">
+              查看挑战
+            </View>
+          }
+        </View>
         <View className="line2">
           <View className="date">{date}</View>
           {/* <View className="duration-time">{durationTimeStr}</View> */}
@@ -328,8 +336,8 @@ class FileItem extends Taro.Component {
         !noIcon && <View className="share-wrapper">
           {
             fileState.roomId && <View onClick={this.goSharePage.bind(this, fileState.roomId)} className="share-info">
-              查看分享
-          </View>
+              查看挑战
+            </View>
           }
           {
             !fileState.roomId && <View onClick={this.onShare} className="share-icon">
