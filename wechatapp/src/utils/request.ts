@@ -20,7 +20,7 @@ export default (option: RequestParams): Promise<Request.requestResult> => new Pr
     data: requestData,
     url: API_URL + url,
     header: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      // 'Content-Type': 'application/x-www-form-urlencoded',
       'Cookie': token,
     },
     success: res => {
