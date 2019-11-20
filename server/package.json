@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.0.20",
+    "@ffprobe-installer/ffprobe": "^1.0.12",
     "@types/fluent-ffmpeg": "^2.1.11",
     "@types/koa": "^2.0.52",
     "@types/koa-better-body": "^3.1.0",

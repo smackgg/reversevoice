@@ -1,4 +1,5 @@
-import { path as ffprobePath } from '@ffmpeg-installer/ffmpeg'
+import ffmpegPath from '@ffmpeg-installer/ffmpeg'
+import ffprobePath from '@ffprobe-installer/ffprobe'
 import uuidv4 from 'uuid/v4'
 import ffmpeg from 'fluent-ffmpeg'
 // import upLoadFile from '../util/qiniu'
@@ -11,8 +12,8 @@ import upLoadFile from '../util/qiniu'
 
 import path from 'path'
 
-ffmpeg.setFfmpegPath(ffprobePath)
-
+ffmpeg.setFfmpegPath(ffmpegPath.path)
+ffmpeg.setFfprobePath(ffprobePath.path)
 
 type QiniuReply = {
   hash: string;
@@ -20,7 +21,10 @@ type QiniuReply = {
 }
 
 // 反转视频
-const reverseVoice = (filepath: string, fileName: string): Promise<string> => new Promise((resolve, reject) => {
+const reverseVoice = (filepath: string, fileName: string): Promise<{
+  path: string;
+  duration: number;
+}> => new Promise((resolve, reject) => {
   const folderPath = dateFormat(new Date(), 'YYYY_MM_dd')
   const publicPath = path.resolve((__dirname + '../../public/' + folderPath))
   if (!fs.existsSync(publicPath)) {
@@ -30,7 +34,10 @@ const reverseVoice = (filepath: string, fileName: string): Promise<string> => ne
   const match = filepath.match(/\.durationTime=(\d+)/)
   // console.log(fileName)
   const duration = Number(match && match[1] ? match[1] : 0)
-
+  ffmpeg.ffprobe(filepath, (err, metadata) => {
+    console.log(err, metadata, 111)
+  })
+  console.log(publicPath, filepath )
   ffmpeg(filepath)
     .format('mp4')
     // .duration(duration / 1000)
@@ -59,9 +66,16 @@ const reverseVoice = (filepath: string, fileName: string): Promise<string> => ne
     // .duration(duration / 1000)
     .save(publicPath + saveFilePath)
     .on('end', (res) => {
-      console.log(res, '1111')
-      resolve(folderPath + saveFilePath)
+      console.log(res, '1111', publicPath + saveFilePath)
+      ffmpeg.ffprobe(publicPath + saveFilePath, (err, metadata) => {
+        // console.log(err, metadata)
+        resolve({
+          path: folderPath + saveFilePath,
+          duration: metadata.format.duration,
+        })
+      })
     })
+
 })
 /**
  * POST /api/mp3/reverse
@@ -74,14 +88,15 @@ export const postMp3Reverse = async (ctx: any) => {
     return ctx.throw(400, '请上传正确的文件')
   }
   // const reply = await reverseVoice(file.path)
-  const [err, saveFilePath] = await cErr(reverseVoice(file.path, file.name))
+  const [err, reverseRes] = await cErr(reverseVoice(file.path, file.name))
   if (err) {
     ctx.throw(500, err)
     return
   }
   ctx.body = {
     data: {
-      path: saveFilePath,
+      path: reverseRes.path,
+      duration: reverseRes.duration,
     },
     code: 0,
   }
@@ -116,9 +131,11 @@ export const postMp3Upload = async (ctx: any) => {
   if (!file) {
     return ctx.throw(400, '请上传正确的文件')
   }
+
+  const { duration = 0 } = ctx.request.fields
   // const reply = await reverseVoice(file.path)
   // const [err, saveFilePath] = await cErr(reverseVoice(file.path))
-  const [err, result] = await cErr(upLoadFile('reverse-voice', uuidv4() + '.mp3', file.path))
+  const [err, result] = await cErr(upLoadFile('reverse-voice', `${uuidv4()}.durationTime=${duration * 1000}.mp3`, file.path))
   if (err || result.error) {
     ctx.throw(500, err || result.error)
     return
