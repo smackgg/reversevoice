@@ -98,9 +98,14 @@
   .share-wrapper {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
 
     .share-icon {
       opacity: .6;
+    }
+
+    .share-info {
+      color: $link-color;
     }
     view {
       margin-left: 20rpx;

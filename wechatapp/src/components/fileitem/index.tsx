@@ -1,12 +1,15 @@
 import { ComponentClass } from 'react'
 import Taro, { InnerAudioContext } from '@tarojs/taro'
-import PropTypes from 'prop-types'
+import PropTypes, { any } from 'prop-types'
 import { View, Text } from '@tarojs/components'
 import moment from 'moment'
 import { getTimeStr } from '@/utils'
 import classNames from 'classnames'
-import { LocalFileInfo, deleteFile } from '@/utils/reverse'
+import { LocalFileInfo, deleteFile, uploadFile, setLSRFileValue } from '@/utils/reverse'
 import { AtIcon } from 'taro-ui'
+import { createRoom } from '@/services/room'
+import { connect } from '@tarojs/redux'
+import { UserDetail } from '@/redux/reducers/user'
 
 import './index.scss'
 
@@ -32,8 +35,12 @@ moment.locale('zh-cn', {
 //   // context: InnerAudioContext
 // }
 
+type PageStateProps = {
+  userDetail: UserDetail,
+}
 
 type PageOwnProps = {
+  userDetail: any
   file: LocalFileInfo
   active: boolean
   onShowDetail: (key: number) => void
@@ -49,8 +56,12 @@ type PageState = {
 }
 
 interface FileItem {
-  props: PageOwnProps,
+  props: PageOwnProps & PageStateProps,
 }
+
+@connect(({ user }) => ({
+  userDetail: user.userDetail,
+}))
 
 class FileItem extends Taro.Component {
   innerAudioContext: InnerAudioContext
@@ -61,11 +72,13 @@ class FileItem extends Taro.Component {
     // onPlay: PropTypes.func,
     onShowDetail: PropTypes.func,
     shouldUpdateFileList: PropTypes.func,
+    userDetail: any,
   }
 
   static defaultProps = {
     file: undefined,
     active: false,
+    userDetail: {},
   }
 
   state: PageState = {
@@ -86,18 +99,23 @@ class FileItem extends Taro.Component {
       this.innerAudioContext.destroy()
     }
 
-    if (nextProps.active !== this.props.active && nextProps.active) {
-      this.initAudio(nextProps.file)
-    }
+    this.initAudio(nextProps.file)
+    // if (nextProps.active !== this.props.active && nextProps.active) {
+    //   this.initAudio(nextProps.file)
+    // }
 
     this.setState({
       fileState: nextProps.file,
     })
   }
 
+  componentWillUnmount() {
+    this.onStop()
+  }
+
   // 初始化音频数据
   initAudio = (file: LocalFileInfo) => {
-    if (this.innerAudioContext ) {
+    if (this.innerAudioContext) {
       this.innerAudioContext.offCanplay()
       this.innerAudioContext.offPlay()
       this.innerAudioContext.offTimeUpdate()
@@ -107,7 +125,6 @@ class FileItem extends Taro.Component {
     let innerAudioContext = Taro.createInnerAudioContext()
     this.innerAudioContext = innerAudioContext
     this.changePlayUrl(file)
-
     // 获取音频时长
     innerAudioContext.onCanplay(() => {
       innerAudioContext.duration
@@ -214,67 +231,64 @@ class FileItem extends Taro.Component {
   }
 
   onShare = async () => {
-    Taro.showToast({
-      title: '分享功能正在开发中~',
-      icon: 'none',
+    console.log(this.props.userDetail)
+    const { isLogin } = this.props.userDetail
+    if (!isLogin) {
+      Taro.navigateTo({
+        url: '/pages/authorize/index',
+      })
+      return
+    }
+    const { fileState } = this.state
+    if (!fileState) {
+      return
+    }
+
+    try {
+      const [file, reverseFile] = await Promise.all([await uploadFile(fileState.path), await uploadFile(fileState.reverseFilePath)])
+        .then(results => results).catch(error => Promise.reject(error))
+
+      const res = await createRoom({
+        oriAudioUrl: file.data.path,
+        revAudioUrl: reverseFile.data.path,
+      })
+      console.log(res)
+      const roomId = res.data.roomId
+      setLSRFileValue(fileState.index, 'roomId', roomId)
+
+      this.props.shouldUpdateFileList()
+    } catch (error) {
+      Taro.showToast({
+        title: '生成分享链接失败，请稍候重试~',
+        icon: 'none',
+      })
+    }
+
+    // console.log(fileState)
+    // Taro.showToast({
+    //   title: '分享功能正在开发中~',
+    //   icon: 'none',
+    // })
+  }
+
+  goSharePage = (roomId: string) => {
+    Taro.navigateTo({
+      url: `/pages/room/index?roomId=${roomId}`,
     })
   }
 
-  // 音频反转
-  // onReverse = () => {
-  //   const { fileState } = this.state
-
-  //   if (!fileState) {
-  //     return
-  //   }
-
-  //   Taro.uploadFile({
-  //     url: `${API_URL}/api/file/mp3/reverse`,
-  //     filePath: fileState.filePath,
-  //     name: 'file',
-  //     formData: {
-  //       'msg': 'voice',
-  //     },
-  //     header: {
-  //       'Content-Type': 'multipart/form-data',
-  //       'accept': 'application/json',
-  //     },
-  //     success: (res) => {
-  //       const data = JSON.parse(res.data)
-  //       const path = data.data.path
-  //       //do something
-  //       Taro.downloadFile({
-  //         url: `${API_URL}/${path}`,
-  //         success: (saveRes) => {
-  //           // 更新文件列表
-  //           // this.getFiles()
-  //           Taro.saveFile({
-  //             tempFilePath: saveRes.tempFilePath,
-  //             complete: () => {
-  //               this.props.shouldUpdateFileList()
-  //             },
-  //           })
-
-  //           // 清除文件
-  //           request({
-  //             url: `${API_URL}/api/file/mp3/reverse?path=${path}`,
-  //             method: 'DELETE',
-  //           })
-  //         },
-  //       })
-  //     },
-  //   })
-  // }
 
   render() {
     const { fileState, durationTime, currentTime, playStatus, activeIndex } = this.state
     if (!fileState || !fileState.file || !fileState.reverseFile) {
       return <View></View>
     }
+
     const { active } = this.props
     // console.log(active)
     // { fileState.file.size / 1000 } kb
     const { date, time } = this.getDate(fileState.file.createTime * 1000)
+    // console.log(durationTime)
     const durationTimeStr = getTimeStr(durationTime * 1000).str
     return <View className={classNames('file-item', { playing: playStatus === 1, active })}>
       <View className="head" onClick={this.onShowDetail}>
@@ -314,16 +328,21 @@ class FileItem extends Taro.Component {
                 </View>
               }
               <View onClick={this.onStop}><AtIcon value="stop" size="22" color="#000"></AtIcon></View>
-              {/* <View onClick={this.onReverse}>反转</View> */}
-              {/* <View onClick={this.onDelete}>删除</View> */}
             </View>
           </View>
         })
       }
       <View className="share-wrapper">
-        <View onClick={this.onShare} className="share-icon">
-          <AtIcon value="share" size="26" color="#000"></AtIcon>
-        </View>
+        {
+          fileState.roomId && <View onClick={this.goSharePage.bind(this, fileState.roomId)} className="share-info">
+            查看分享
+          </View>
+        }
+        {
+          !fileState.roomId && <View onClick={this.onShare} className="share-icon">
+            <AtIcon value="share" size="26" color="#000"></AtIcon>
+          </View>
+        }
         <View onClick={this.onDelete}>
           <AtIcon value="trash" size="26" color="#F00"></AtIcon>
         </View>
