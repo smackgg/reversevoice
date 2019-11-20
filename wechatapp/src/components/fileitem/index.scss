@@ -6,6 +6,9 @@
   transition: height .4s;
   transform: translateZ(0);
 
+  &.no-icon {
+    border-bottom: none;
+  }
   &.active {
     height: 700rpx;
     overflow: hidden;

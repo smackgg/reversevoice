@@ -106,6 +106,10 @@
         font-size: 30rpx;
         background: #37C15F;
         border-radius: 20rpx;
+
+        &:active {
+          opacity: .8;
+        }
       }
     }
   }

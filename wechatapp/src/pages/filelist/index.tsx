@@ -22,7 +22,7 @@ import './index.scss'
 // #endregion
 
 type PageStateProps = {
-  userDeital: UserDetail
+  userDetail: UserDetail
 }
 
 type PageDispatchProps = {
@@ -43,7 +43,7 @@ interface FileListPage {
 }
 
 @connect(({ user }) => ({
-  userDeital: user.userDeital,
+  userDetail: user.userDetail,
 }))
 
 @withShare()

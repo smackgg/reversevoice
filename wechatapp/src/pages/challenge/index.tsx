@@ -5,10 +5,12 @@ import { View, Block } from '@tarojs/components'
 import classNames from 'classnames'
 // import { AtIcon } from 'taro-ui'
 import { getTimeStr } from '@/utils'
-import { saveFile, reverse, LocalFileInfo } from '@/utils/reverse'
-import withShare from '@/components/@withShare'
+import { saveFile, reverse, LocalFileInfo, getFiles, uploadFile } from '@/utils/reverse'
 import { getRecordAuth } from '@/utils/auth'
 import { UserDetail } from '@/redux/reducers/user'
+import { FileItem } from '@/components'
+import { joinRoom } from '@/services/room'
+
 import './index.scss'
 
 // #region 书写注意
@@ -35,12 +37,12 @@ type PageOwnProps = {
 type PageState = {
   recording: boolean,
   time: number,
-  fileList?: LocalFileInfo[],
+  file?: LocalFileInfo,
 }
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
 
-interface Index {
+interface Challenge {
   props: IProps
 }
 
@@ -48,8 +50,7 @@ interface Index {
   userDetail: user.userDetail,
 }))
 
-@withShare()
-class Index extends Component {
+class Challenge extends Component {
   /**
  * 指定config的类型声明为: Taro.Config
  *
@@ -58,23 +59,19 @@ class Index extends Component {
  * 提示和声明 navigationBarTextStyle: 'black' | 'white' 类型冲突, 需要显示声明类型
  */
   config: Config = {
-    navigationBarTitleText: '倒放挑战',
-  }
-
-  $shareOptions = {
-    title: '倒放挑战！能听懂我说啥么？最近很火的倒放录音来啦~',
-    path: 'pages/index/index',
+    navigationBarTitleText: '参加挑战',
   }
 
   audioSource: string = 'auto'
   timer?: number
   RecorderManager: RecorderManager
   tempFilePath?: string
+  roomId: string
 
   state: PageState = {
     recording: false,
     time: 0,
-    fileList: undefined,
+    file: undefined,
   }
 
   componentWillMount() {
@@ -100,7 +97,14 @@ class Index extends Component {
       try {
         // 保存文件
         const fileInfo = await saveFile(res.tempFilePath)
-        await reverse(fileInfo)
+        const index = await reverse(fileInfo)
+
+        const files = await getFiles()
+
+        this.setState({
+          file: files.filter(file => file.index === index)[0],
+        })
+        // await reverse(fileInfo)
         // await this.getFiles(true)
         Taro.showToast({
           title: '保存录音成功',
@@ -117,7 +121,8 @@ class Index extends Component {
   }
 
   componentDidShow() {
-
+    let { roomId } = this.$router.params
+    this.roomId = roomId
   }
 
   // 开始录音
@@ -177,22 +182,85 @@ class Index extends Component {
     }
   }
 
+  onRecord = () => {
+    this.setState({
+      file: null,
+    })
+  }
+
+  onChallenge = async () => {
+    const { isLogin } = this.props.userDetail
+    if (!isLogin) {
+      Taro.navigateTo({
+        url: '/pages/authorize/index',
+      })
+      return
+    }
+    const { file: fileState } = this.state
+
+    if (!fileState) {
+      return
+    }
+
+    try {
+      const [file, reverseFile] = await Promise.all([await uploadFile({
+        path: fileState.path,
+        duration: fileState.duration,
+      }), await uploadFile({
+        path: fileState.reverseFilePath,
+        duration: fileState.duration,
+      })])
+        .then(results => results).catch(error => Promise.reject(error))
+
+      await joinRoom({
+        id: this.roomId,
+        oriAudioUrl: file.data.path,
+        revAudioUrl: reverseFile.data.path,
+      })
+
+      Taro.showModal({
+        title: '参加成功',
+        content: '点击查看挑战',
+        showCancel: false,
+        success: (res) => {
+          if (res.confirm) {
+            Taro.navigateBack({
+              fail: () => Taro.navigateTo({
+                url: `/pages/room/index?roomId=${this.roomId}`,
+              }),
+            })
+          }
+        },
+      })
+
+    } catch (error) {
+      Taro.showToast({
+        title: '参加挑战失败，请重试~',
+        icon: 'none',
+      })
+    }
+
+  }
+
   render() {
-    const { recording, time } = this.state
+    const { recording, time, file } = this.state
     const { s, ms } = getTimeStr(time)
 
     return (
       <View className={classNames('index', { active: recording })}>
-        <View>
-          <View>游戏规则：</View>
-          <View>假设两个人 A 和 B。</View>
-          <View>A 录音后将录音进行反转，将反转之后的录音给 B 听。</View>
-          <View>B 模仿倒放后的录音，再进行反转。</View>
-          <View>B 通过反转之后的声音，猜测 A 录的原声。</View>
-          <View></View>
-          <View></View>
-        </View>
-        <View className="record">
+        {
+          file && <View className="file-wrapper">
+            <FileItem noIcon file={file} active onShowDetail={() => { }} />
+            <View className="buttons">
+              <View className="button" onClick={this.onChallenge}>参加挑战</View>
+              <View className="button ghost" onClick={this.onRecord}>重新录制</View>
+            </View>
+          </View>
+        }
+
+        <View className={classNames('record', {
+          hidden: !!file,
+        })}>
           {
               recording && <Block>
                 <View className="record-title">正在录音中</View>
@@ -215,4 +283,4 @@ class Index extends Component {
 //
 // #endregion
 
-export default Index as ComponentClass<PageOwnProps, PageState>
+export default Challenge as ComponentClass<PageOwnProps, PageState>

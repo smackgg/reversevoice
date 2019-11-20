@@ -7,10 +7,19 @@ export const createRoom = (data: {
   url: '/api/room',
   method: 'POST',
   data,
-  setToken: true,
 })
 
 export const getRoomDetail = (data: { id: string }) => request({
   url: '/api/room',
+  data,
+})
+
+export const joinRoom = (data: {
+  oriAudioUrl: string;
+  revAudioUrl: string;
+  id: string;
+}) => request({
+  url: '/api/room',
+  method: 'PUT',
   data,
 })

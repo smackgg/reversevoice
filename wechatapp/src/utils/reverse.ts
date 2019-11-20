@@ -94,6 +94,7 @@ const setLSRFile = (savedFilePath: string, oriFileIndex: number, duration: numbe
     }
     return file
   })))
+  return oriFileIndex
 }
 
 // 获取音频文件长度
@@ -145,8 +146,8 @@ export const reverse = (reverseFile: LocalFileInfo): Promise<any> => {
             Taro.saveFile({
               tempFilePath: saveRes.tempFilePath,
               success: (res) => {
-                setLSRFile(res.savedFilePath, reverseFile.index, duration)
-                resolve()
+                const index = setLSRFile(res.savedFilePath, reverseFile.index, duration)
+                resolve(index)
               },
               fail: reject,
             })

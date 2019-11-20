@@ -1,0 +1,131 @@
+
+.index {
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding-bottom: 500rpx;
+
+  .file-wrapper {
+    padding: 60rpx 40rpx;
+  }
+  &.active {
+    .record {
+      height: 500rpx;
+    }
+  }
+  .record {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    height: 200rpx;
+    background: #1b1c20;
+    border-radius: 20rpx 20rpx 0 0;
+    transform: translateZ(0);
+    transition: all .2s;
+
+    &.hidden {
+      // height: 0 !important;
+      // transform: translateY();
+      bottom: -200rpx;
+      overflow: hidden;
+    }
+
+    &-title {
+      font-size: 40rpx;
+      color: #fff;
+      text-align: center;
+      margin-top: 80rpx;
+    }
+
+    &-time {
+      font-size: 34rpx;
+      color: #666;
+      text-align: center;
+      margin-top: 40rpx;
+      display: flex;
+      justify-content: center;
+
+      .time-s, .time-ms {
+        width: 50rpx;
+        text-align: center;
+      }
+    }
+
+    &-button {
+      position: absolute;
+      width: 100rpx;
+      height: 100rpx;
+      background: #fff;
+      border-radius: 50%;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 70rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &::after {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 90rpx;
+        height: 90rpx;
+        z-index: 1;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background: #1b1c20;
+      }
+      &__inner {
+        position: relative;
+        width: 80rpx;
+        height: 80rpx;
+        background: #e65746;
+        border-radius: 50%;
+        z-index: 2;
+        transition: all .6s;
+        transform: translateZ(0);
+
+        &.active {
+          width: 40rpx;
+          height: 40rpx;
+          border-radius: 10rpx;
+        }
+        &:active {
+          background: #803531;
+        }
+      }
+    }
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: space-around;
+    .button {
+      margin: 20rpx;
+      // width: 300rpx;
+      padding: 0rpx 80rpx;
+      height: 90rpx;
+      text-align: center;
+      line-height: 86rpx;
+      color: #fff;
+      font-size: 30rpx;
+      box-sizing: border-box;
+      border: 4rpx solid #37C15F;
+      background: #37C15F;
+      border-radius: 20rpx;
+
+      &.ghost {
+        background: transparent;
+        color: #37C15F;
+      }
+      &:active {
+        opacity: .8;
+      }
+    }
+  }
+}
+
+

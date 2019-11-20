@@ -89,6 +89,7 @@ class App extends Component {
       'pages/filelist/index',
       'pages/authorize/index',
       'pages/room/index',
+      'pages/challenge/index',
     ],
     window: {
       backgroundTextStyle: 'light',

@@ -40,11 +40,11 @@ type PageStateProps = {
 }
 
 type PageOwnProps = {
-  userDetail: any
   file: LocalFileInfo
   active: boolean
   onShowDetail: (key: number) => void
-  shouldUpdateFileList: () => void
+  shouldUpdateFileList?: () => void
+  noIcon?: boolean
 }
 
 type PageState = {
@@ -54,8 +54,10 @@ type PageState = {
   activeIndex: number
 }
 
+type IProps = PageStateProps & PageOwnProps
+
 interface FileItem {
-  props: PageOwnProps & PageStateProps,
+  props: IProps,
 }
 
 @connect(({ user }) => ({
@@ -66,18 +68,20 @@ class FileItem extends Taro.Component {
   innerAudioContext: InnerAudioContext
 
   static propTypes = {
-    file: PropTypes.object,
+    file: PropTypes.object.isRequired,
     active: PropTypes.bool,
     // onPlay: PropTypes.func,
     onShowDetail: PropTypes.func,
     shouldUpdateFileList: PropTypes.func,
     userDetail: any,
+    noIcon: PropTypes.bool,
   }
 
   static defaultProps = {
     file: undefined,
     active: false,
     userDetail: {},
+    noIcon: false,
   }
 
   state: PageState = {
@@ -97,7 +101,7 @@ class FileItem extends Taro.Component {
     this.initAudio(this.props.file)
   }
 
-  componentWillReceiveProps(nextProps: PageOwnProps) {
+  componentWillReceiveProps(nextProps: IProps) {
     if (nextProps.active !== this.props.active && !nextProps.active) {
       this.onStop()
       this.innerAudioContext.destroy()
@@ -212,7 +216,7 @@ class FileItem extends Taro.Component {
     const { fileState } = this.state
 
     await deleteFile(fileState)
-    this.props.shouldUpdateFileList()
+    this.props.shouldUpdateFileList && this.props.shouldUpdateFileList()
   }
 
   onShare = async () => {
@@ -243,7 +247,7 @@ class FileItem extends Taro.Component {
       const roomId = res.data.roomId
       setLSRFileValue(fileState.index, 'roomId', roomId)
 
-      this.props.shouldUpdateFileList()
+      this.props.shouldUpdateFileList && this.props.shouldUpdateFileList()
     } catch (error) {
       Taro.showToast({
         title: '生成分享链接失败，请稍候重试~',
@@ -272,13 +276,13 @@ class FileItem extends Taro.Component {
     }
 
     const durationTime = fileState.duration
-    const { active } = this.props
+    const { active, noIcon } = this.props
     // console.log(active)
     // { fileState.file.size / 1000 } kb
     const { date, time } = this.getDate(fileState.file.createTime * 1000)
     // console.log(durationTime)
     const durationTimeStr = getTimeStr(durationTime * 1000).str
-    return <View className={classNames('file-item', { playing: playStatus === 1, active })}>
+    return <View className={classNames('file-item', { playing: playStatus === 1, active, 'no-icon': noIcon })}>
       <View className="head" onClick={this.onShowDetail}>
         <View className="time">{fileState.new && false && <Text className="new-tag">new</Text>} {time}</View>
         <View className="line2">
@@ -320,21 +324,23 @@ class FileItem extends Taro.Component {
           </View>
         })
       }
-      <View className="share-wrapper">
-        {
-          fileState.roomId && <View onClick={this.goSharePage.bind(this, fileState.roomId)} className="share-info">
-            查看分享
+      {
+        !noIcon && <View className="share-wrapper">
+          {
+            fileState.roomId && <View onClick={this.goSharePage.bind(this, fileState.roomId)} className="share-info">
+              查看分享
           </View>
-        }
-        {
-          !fileState.roomId && <View onClick={this.onShare} className="share-icon">
-            <AtIcon value="share" size="26" color="#000"></AtIcon>
+          }
+          {
+            !fileState.roomId && <View onClick={this.onShare} className="share-icon">
+              <AtIcon value="share" size="26" color="#000"></AtIcon>
+            </View>
+          }
+          <View onClick={this.onDelete}>
+            <AtIcon value="trash" size="26" color="#F00"></AtIcon>
           </View>
-        }
-        <View onClick={this.onDelete}>
-          <AtIcon value="trash" size="26" color="#F00"></AtIcon>
         </View>
-      </View>
+      }
     </View>
   }
 }

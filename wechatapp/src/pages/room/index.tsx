@@ -132,7 +132,6 @@ class Room extends Component {
     }
     let innerAudioContext = Taro.createInnerAudioContext()
     this.innerAudioContext = innerAudioContext
-    console.log(url, 222)
     this.innerAudioContext.src = url
 
     // 获取音频时长
@@ -157,62 +156,6 @@ class Room extends Component {
       })
     })
   })
-  // 开始录音
-  onRecordHandler = async () => {
-    const recordAuth = await getRecordAuth()
-
-    if (!recordAuth) {
-      return
-    }
-    const { recording } = this.state
-    this.setState({
-      recording: !recording,
-    })
-
-    // 开始录音
-    if (!recording) {
-      setTimeout(() => {
-        this.startRecord()
-      }, 200)
-    } else {
-      this.stopRecord()
-    }
-  }
-
-  // 开始录音
-  startRecord = () => {
-
-    this.RecorderManager.start({
-      format: 'mp3',
-      // sampleRate: '8000',
-      duration: 15000,
-      audioSource: this.audioSource,
-    })
-
-    // 计时器
-    this.timer = setInterval(() => {
-      if (this.state.time >= 10000) {
-        this.stopRecord()
-        return
-      }
-      this.setState({
-        time: this.state.time + 100,
-      })
-    }, 100)
-  }
-
-  // 结束录音
-  stopRecord = (resetTime = true) => {
-    clearInterval(this.timer)
-    this.timer = undefined
-    this.RecorderManager.stop()
-
-    if (resetTime) {
-      this.setState({
-        time: 0,
-      })
-    }
-  }
 
   onPlay = async (activeIndex: number) => {
     // if (!this.canplay) {
@@ -232,9 +175,6 @@ class Room extends Component {
       activeIndex: activeIndex,
       playStatus: 1,
     })
-
-
-
     // this.innerAudioContext.play()
   }
 
@@ -270,6 +210,18 @@ class Room extends Component {
     })
   }
 
+  onNewChallenge = () => {
+    Taro.switchTab({
+      url: '/pages/index/index',
+    })
+  }
+
+  joinChallenge = () => {
+    Taro.navigateTo({
+      url: `/pages/challenge/index?roomId${this.roomId}`,
+    })
+  }
+
   render() {
     const { owner, currentTime, activeIndex, playStatus } = this.state
     // console.log(activeIndex === 0 && playStatus === 1, playStatus, activeIndex)
@@ -285,12 +237,11 @@ class Room extends Component {
             </View>
             <View className="time">{getTimeStr(currentTime * 1000).str}/{getTimeStr(getDurationByFilePath(owner.revAudio.url) * 1000).str}</View>
             <View className="play-buttons">
-              <View className="button play">
-                {(activeIndex === 0 && playStatus === 1)
-                  ? <Image className="pause-icon" src={pauseIcon} onClick={this.onPause.bind(this, 0)}></Image>
-                  : <Image className="play-icon" src={playIcon} onClick={this.onPlay.bind(this, 0)}></Image>
-                  }
-              </View>
+              {
+                (activeIndex === 0 && playStatus === 1)
+                  ? <View className="button play" onClick={this.onPause.bind(this, 0)}><Image className="pause-icon" src={pauseIcon}></Image></View>
+                  : <View className="button play" onClick={this.onPlay.bind(this, 0)}><Image className="play-icon" src={playIcon}></Image></View>
+              }
               <View className="button stop"><Image className="stop-icon" src={stopIcon} onClick={this.onStop.bind(this, 0)}></Image></View>
               <View className="button ratio1">0.75</View>
               <View className="button ratio2">0.5</View>
@@ -298,8 +249,8 @@ class Room extends Component {
           </View>
           <View className="buttons">
             <View className="button" onClick={this.listenOriVoice}>听原声</View>
-            <View className="button">挑战</View>
-            <View className="button">我也要发起挑战</View>
+            <View className="button" onClick={this.joinChallenge}>参加挑战</View>
+            <View className="button" onClick={this.onNewChallenge}>发起挑战</View>
           </View>
         </View>
       </View>
