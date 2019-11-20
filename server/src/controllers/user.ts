@@ -60,11 +60,12 @@ export const getUserInfo = async (ctx: any) => {
     openid,
   })
 
-  const data: any = user
-  data.isLogin = true
-
   ctx.body = {
-    data,
-    status: 0,
+    data: {
+      isLogin: true,
+      ...JSON.parse(JSON.stringify(user)),
+    },
+    code: 0,
+    msg: 'ok',
   }
 }
