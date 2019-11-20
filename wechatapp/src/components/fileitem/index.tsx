@@ -48,8 +48,7 @@ type PageOwnProps = {
 }
 
 type PageState = {
-  fileState?: LocalFileInfo
-  durationTime: number
+  fileState: LocalFileInfo
   currentTime: number
   playStatus: 0 | 1 | 2 // 0-停止 1-播放中 2-暂停
   activeIndex: number
@@ -82,8 +81,13 @@ class FileItem extends Taro.Component {
   }
 
   state: PageState = {
-    fileState: undefined,
-    durationTime: 0,
+    // fileState: undefined,
+    fileState: {
+      path: '',
+      index: -1,
+      reverseFilePath: '',
+      duration: 0,
+    },
     currentTime: 0,
     playStatus: 0,
     activeIndex: 0,
@@ -125,31 +129,18 @@ class FileItem extends Taro.Component {
     let innerAudioContext = Taro.createInnerAudioContext()
     this.innerAudioContext = innerAudioContext
     this.changePlayUrl(file)
-    // 获取音频时长
-    innerAudioContext.onCanplay(() => {
-      innerAudioContext.duration
-      setTimeout(() => {
-        this.setState({
-          durationTime: innerAudioContext.duration,
-        })
-      }, 400)
-    })
 
-    innerAudioContext.onPlay(() => {
-      this.setState({
-        durationTime: innerAudioContext.duration,
-      })
-    })
     innerAudioContext.onTimeUpdate(() => {
       this.setState({
         currentTime: innerAudioContext.currentTime,
       })
     })
     innerAudioContext.onEnded(() => {
-      this.onStop()
+      console.log(this.state.fileState.duration)
       this.setState({
-        currentTime: this.state.durationTime,
+        currentTime: this.state.fileState.duration,
       })
+      this.onStop()
     })
     // this.innerAudioContext.src = reverse ? file.path : file.reverseFilePath
     this.setState({
@@ -173,9 +164,6 @@ class FileItem extends Taro.Component {
   // 播放
   onPlay = (activeIndex: number) => {
     const { fileState, playStatus } = this.state
-    if (!fileState) {
-      return
-    }
 
     const nextState: any = {
       playStatus: 0,
@@ -216,22 +204,18 @@ class FileItem extends Taro.Component {
   onShowDetail = () => {
     const { fileState } = this.state
     const createTime = fileState && fileState.file && fileState.file.createTime || -1
-    // console.log(this.props.active ? -1 : createTime)
     this.props.onShowDetail(this.props.active ? -1 : createTime)
   }
 
   // 本地文件删除
   onDelete = async () => {
     const { fileState } = this.state
-    if (!fileState) {
-      return
-    }
+
     await deleteFile(fileState)
     this.props.shouldUpdateFileList()
   }
 
   onShare = async () => {
-    console.log(this.props.userDetail)
     const { isLogin } = this.props.userDetail
     if (!isLogin) {
       Taro.navigateTo({
@@ -240,12 +224,15 @@ class FileItem extends Taro.Component {
       return
     }
     const { fileState } = this.state
-    if (!fileState) {
-      return
-    }
 
     try {
-      const [file, reverseFile] = await Promise.all([await uploadFile(fileState.path), await uploadFile(fileState.reverseFilePath)])
+      const [file, reverseFile] = await Promise.all([await uploadFile({
+        path: fileState.path,
+        duration: fileState.duration,
+      }), await uploadFile({
+        path: fileState.reverseFilePath,
+        duration: fileState.duration,
+      })])
         .then(results => results).catch(error => Promise.reject(error))
 
       const res = await createRoom({
@@ -279,11 +266,12 @@ class FileItem extends Taro.Component {
 
 
   render() {
-    const { fileState, durationTime, currentTime, playStatus, activeIndex } = this.state
-    if (!fileState || !fileState.file || !fileState.reverseFile) {
+    const { fileState, currentTime, playStatus, activeIndex } = this.state
+    if (!fileState || !fileState.file || !fileState.reverseFile || fileState.index === -1) {
       return <View></View>
     }
 
+    const durationTime = fileState.duration
     const { active } = this.props
     // console.log(active)
     // { fileState.file.size / 1000 } kb

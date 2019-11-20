@@ -58,7 +58,7 @@ class Index extends Component {
  * 提示和声明 navigationBarTextStyle: 'black' | 'white' 类型冲突, 需要显示声明类型
  */
   config: Config = {
-    navigationBarTitleText: '首页',
+    navigationBarTitleText: '倒放挑战',
   }
 
   $shareOptions = {
@@ -183,6 +183,15 @@ class Index extends Component {
 
     return (
       <View className={classNames('index', { active: recording })}>
+        <View>
+          <View>游戏规则：</View>
+          <View>假设两个人 A 和 B。</View>
+          <View>A 录音后将录音进行反转，将反转之后的录音给 B 听。</View>
+          <View>B 模仿倒放后的录音，再进行反转。</View>
+          <View>B 通过反转之后的声音，猜测 A 录的原声。</View>
+          <View></View>
+          <View></View>
+        </View>
         <View className="record">
           {
               recording && <Block>

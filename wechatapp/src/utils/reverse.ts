@@ -18,6 +18,7 @@ export type LocalFileInfo = {
   new?: boolean
   roomId?: string,
   otherName?: string,
+  duration: number,
 }
 
 // 获取本地缓存的列表
@@ -46,6 +47,7 @@ export const getFiles = (): Promise<LocalFileInfo[]> => new Promise((resolve, re
             fileList[index].valid = true
           }
         })
+
         return localFile
       })
 
@@ -70,7 +72,7 @@ const setLSFile = (savedFilePath: string) => {
     path: savedFilePath,
     index,
     reverseFilePath: '',
-    fileDuration: getDurationByFilePath(savedFilePath),
+    duration: 0,
   }
 
   voiceFiles.unshift(fileInfo)
@@ -80,14 +82,14 @@ const setLSFile = (savedFilePath: string) => {
 }
 
 // 写入本地缓存的反转文件
-const setLSRFile = (savedFilePath: string, oriFileIndex: number) => {
+const setLSRFile = (savedFilePath: string, oriFileIndex: number, duration: number) => {
   const voiceFiles = getLSFiles()
   Taro.setStorageSync('voiceFiles', JSON.stringify(voiceFiles.map((file: LocalFileInfo) => {
     if (file.index === oriFileIndex) {
       return {
         ...file,
         reverseFilePath: savedFilePath,
-        reverseFileDuration: getDurationByFilePath(savedFilePath),
+        duration,
       }
     }
     return file
@@ -95,9 +97,9 @@ const setLSRFile = (savedFilePath: string, oriFileIndex: number) => {
 }
 
 // 获取音频文件长度
-export const getDurationByFilePath = (path: string) => {
+export const getDurationByFilePath = (path: string): number => {
   const match = path.match(/\.durationTime=(\d+)/)
-  return match && match[1] ? match[1] : 0
+  return +(match && match[1] ? match[1] : 0) / 1000
 }
 
 // 设置本地 room id
@@ -133,7 +135,7 @@ export const reverse = (reverseFile: LocalFileInfo): Promise<any> => {
       fail: reject,
       success: (res) => {
         const data = JSON.parse(res.data)
-        const path = data.data.path
+        const { path, duration } = data.data
         //do something
         Taro.downloadFile({
           url: `${API_URL}/${path}`,
@@ -143,7 +145,7 @@ export const reverse = (reverseFile: LocalFileInfo): Promise<any> => {
             Taro.saveFile({
               tempFilePath: saveRes.tempFilePath,
               success: (res) => {
-                setLSRFile(res.savedFilePath, reverseFile.index)
+                setLSRFile(res.savedFilePath, reverseFile.index, duration)
                 resolve()
               },
               fail: reject,
@@ -215,14 +217,20 @@ export const deleteFile = async (file: LocalFileInfo) => {
 }
 
 // 上传文件
-export const uploadFile = (path: string): Promise<any> => {
+export const uploadFile = ({
+  path,
+  duration,
+}: {
+  path: string,
+  duration: number,
+}): Promise<any> => {
   return new Promise((resolve, reject) => {
     Taro.uploadFile({
       url: `${API_URL}/api/file/mp3/upload`,
       filePath: path,
       name: 'file',
       formData: {
-        'msg': 'voice',
+        duration,
       },
       header: {
         'Content-Type': 'multipart/form-data',

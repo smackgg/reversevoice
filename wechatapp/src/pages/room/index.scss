@@ -94,10 +94,11 @@
     .buttons {
       width: 100%;
       display: flex;
-      justify-content: space-between;
+      justify-content: space-around;
       margin-top: 60rpx;
       .button {
-        width: 300rpx;
+        // width: 300rpx;
+        padding: 0rpx 40rpx;
         height: 90rpx;
         text-align: center;
         line-height: 90rpx;

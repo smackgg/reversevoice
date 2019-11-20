@@ -98,10 +98,10 @@ class FileListPage extends Component {
   }
 
   render() {
-    const { recording, fileList } = this.state
-
+    const { fileList } = this.state
+    console.log(fileList)
     return (
-      <View className={classNames('filelist', { active: recording })}>
+      <View className={classNames('filelist')}>
         {
           fileList && <FileList shouldUpdateFileList={this.shouldUpdateFileList} fileList={fileList} />
         }

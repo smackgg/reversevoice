@@ -3,7 +3,7 @@ import Taro, { Component, Config, InnerAudioContext } from '@tarojs/taro'
 // import { connect } from '@tarojs/redux'
 import { View, Block, Image } from '@tarojs/components'
 import classNames from 'classnames'
-import { saveFile, reverse, getFiles } from '@/utils/reverse'
+import { saveFile, reverse, getFiles, getDurationByFilePath } from '@/utils/reverse'
 import withShare from '@/components/@withShare'
 import { getRecordAuth } from '@/utils/auth'
 import { getRoomDetail } from '@/services/room'
@@ -13,10 +13,7 @@ import playIcon from '@/assets/images/play.png'
 import pauseIcon from '@/assets/images/pause.png'
 import stopIcon from '@/assets/images/stop.png'
 
-
-
 import './index.scss'
-import { number } from 'prop-types'
 
 // #region 书写注意
 //
@@ -53,7 +50,8 @@ type PageState = {
   users: RoomUserSchema[],
   durationTime: number,
   currentTime: number,
-  active?: number,
+  activeIndex: number,
+  playStatus: 0 | 1 | 2 // 0-停止 1-播放中 2-暂停
 }
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
@@ -82,13 +80,14 @@ class Room extends Component {
 
   roomId: string
   innerAudioContext: InnerAudioContext
+  canplay = false
   // timer?: number
   // RecorderManager: RecorderManager
   // tempFilePath?: string
 
   state: PageState = {
     // recording: false,
-    active: undefined,
+    activeIndex: 0,
     owner: {
       nickName: '',
       avatarUrl: '',
@@ -100,8 +99,9 @@ class Room extends Component {
       },
     },
     users: [],
-    durationTime: 1,
+    durationTime: 0,
     currentTime: 0,
+    playStatus: 0,
   }
 
   async componentDidShow() {
@@ -118,13 +118,11 @@ class Room extends Component {
     this.setState({
       owner: res.data.owner,
       users: res.data.users,
-    }, () => {
-        this.initAudio(-1)
     })
   }
 
-  initAudio = (activeIndex: number) => {
-    const { owner } = this.state
+  initAudio = (url: string) => new Promise(resolve => {
+    this.canplay = false
     if (this.innerAudioContext) {
       this.innerAudioContext.offCanplay()
       this.innerAudioContext.offPlay()
@@ -134,37 +132,31 @@ class Room extends Component {
     }
     let innerAudioContext = Taro.createInnerAudioContext()
     this.innerAudioContext = innerAudioContext
-    // console.log(owner.revAudio.url)
-    this.innerAudioContext.src = owner.revAudio.url
+    console.log(url, 222)
+    this.innerAudioContext.src = url
+
     // 获取音频时长
     innerAudioContext.onCanplay(() => {
-      innerAudioContext.duration
-      setTimeout(() => {
-        this.setState({
-          durationTime: innerAudioContext.duration,
-        })
-      }, 400)
+      resolve()
     })
 
-    innerAudioContext.onPlay(() => {
-      this.setState({
-        durationTime: innerAudioContext.duration,
-      })
-    })
+    // innerAudioContext.onPlay(() => {
+    //   this.setState({
+    //     durationTime: innerAudioContext.duration,
+    //   })
+    // })
     innerAudioContext.onTimeUpdate(() => {
       this.setState({
         currentTime: innerAudioContext.currentTime,
       })
     })
     innerAudioContext.onEnded(() => {
-      // this.onStop()
+      this.onStop(this.state.activeIndex)
       this.setState({
         currentTime: this.state.durationTime,
       })
     })
-
-  }
-
+  })
   // 开始录音
   onRecordHandler = async () => {
     const recordAuth = await getRecordAuth()
@@ -222,65 +214,92 @@ class Room extends Component {
     }
   }
 
-  onPlay = (active: number) => {
-    if (active === -1) {
-      this.setState({
-        active: -1,
-      })
-      this.innerAudioContext.play()
+  onPlay = async (activeIndex: number) => {
+    // if (!this.canplay) {
+    //   return
+    // }
+    const { playStatus, owner } = this.state
+
+    // 暂停
+    if (playStatus !== 2) {
+      if (activeIndex === 0) {
+        this.initAudio(owner.revAudio.url).then(() => {
+          this.innerAudioContext.play()
+        })
+      }
     }
+    this.setState({
+      activeIndex: activeIndex,
+      playStatus: 1,
+    })
+
+
+
+    // this.innerAudioContext.play()
   }
 
-  onStop = (active: number) => {
-    if (active === -1) {
+  onStop = (activeIndex: number) => {
+    if (activeIndex === this.state.activeIndex) {
       this.setState({
-        active: undefined,
         currentTime: 0,
+        playStatus: 0,
       })
       this.innerAudioContext.stop()
     }
   }
 
-  onPause = (active: number) => {
-    if (active === -1) {
+  onPause = (activeIndex: number) => {
+    if (activeIndex === this.state.activeIndex) {
       this.setState({
-        active: undefined,
+        playStatus: 2,
       })
       this.innerAudioContext.pause()
     }
   }
 
-  componentWillUnmount() {
-    // this.onStop()
-    console.log('componentWillUnmount')
+  // 听原声
+  listenOriVoice = () => {
+    const { owner } = this.state
+    this.initAudio(owner.oriAudio.url).then(() => {
+      this.innerAudioContext.play()
+    })
+
+    this.setState({
+      activeIndex: 0,
+      playStatus: 1,
+    })
   }
 
   render() {
-    const { owner, currentTime, durationTime, active } = this.state
-    const left = `${parseInt('' + (currentTime / durationTime) * 380)}rpx`
-    console.log(active !== -1, active === -1)
+    const { owner, currentTime, activeIndex, playStatus } = this.state
+    // console.log(activeIndex === 0 && playStatus === 1, playStatus, activeIndex)
     return (
       <View className="room">
         <View className="owner">
           <Image className="avatar" src={owner.avatarUrl}></Image>
           <View className="play-block">
             <View className="line">
-              <Image className={classNames('wave-block', { active: active === -1 })} src={waveBlockIcon} style={{ left }}></Image>
+              <Image className={classNames('wave-block', { active: activeIndex === 0 && playStatus === 1 })} src={waveBlockIcon}
+                style={{ left: `${parseInt('' + (activeIndex === 0 ? (currentTime / getDurationByFilePath(owner.revAudio.url)) * 380 : 0))}rpx` }}
+              ></Image>
             </View>
-            <View className="time">{getTimeStr(currentTime * 1000).str}/{getTimeStr(durationTime * 1000).str}</View>
+            <View className="time">{getTimeStr(currentTime * 1000).str}/{getTimeStr(getDurationByFilePath(owner.revAudio.url) * 1000).str}</View>
             <View className="play-buttons">
               <View className="button play">
-                {active !== -1 && <Image className="play-icon" src={playIcon} onClick={this.onPlay.bind(this, -1)}></Image>}
-                {active === -1 && <Image className="pause-icon" src={pauseIcon} onClick={this.onPause.bind(this, -1)}></Image>}
+                {(activeIndex === 0 && playStatus === 1)
+                  ? <Image className="pause-icon" src={pauseIcon} onClick={this.onPause.bind(this, 0)}></Image>
+                  : <Image className="play-icon" src={playIcon} onClick={this.onPlay.bind(this, 0)}></Image>
+                  }
               </View>
-              <View className="button stop"><Image className="stop-icon" src={stopIcon} onClick={this.onStop.bind(this, -1)}></Image></View>
+              <View className="button stop"><Image className="stop-icon" src={stopIcon} onClick={this.onStop.bind(this, 0)}></Image></View>
               <View className="button ratio1">0.75</View>
               <View className="button ratio2">0.5</View>
             </View>
           </View>
           <View className="buttons">
-            <View className="button">我要听原声</View>
-            <View className="button">我也要挑战</View>
+            <View className="button" onClick={this.listenOriVoice}>听原声</View>
+            <View className="button">挑战</View>
+            <View className="button">我也要发起挑战</View>
           </View>
         </View>
       </View>
