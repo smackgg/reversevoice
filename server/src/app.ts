@@ -104,6 +104,7 @@ const routes: {
 } = {
   user: require('./routes/user'),
   file: require('./routes/file'),
+  room: require('./routes/room'),
   // users: require('./routes/users'),
   // 公共 api
   // user: require('./routes/user'),
