@@ -18,6 +18,19 @@ export type UserDocument = mongoose.Document & {
     country: string;
     avatarUrl: string;
   };
+
+  rooms: {
+    id: string;
+    createAt: string;
+  }[];
+  joinedRooms: {
+    id: string;
+    owner: {
+      nickName: string;
+      avatarUrl: string;
+    };
+    createAt: string;
+  }[];
 };
 
 
@@ -45,7 +58,18 @@ const userSchema = new mongoose.Schema({
     country: String,
     avatarUrl: String,
   },
-
+  rooms: [{
+    id: String,
+    createAt: String,
+  }],
+  joinedRooms: [{
+    id: String,
+    owner: {
+      nickName: String,
+      avatarUrl: String,
+    },
+    createAt: String,
+  }],
 }, { timestamps: true })
 
 /**

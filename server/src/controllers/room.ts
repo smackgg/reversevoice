@@ -30,6 +30,17 @@ export const postCreateRoom = async (ctx: any) => {
       },
     }).save()
 
+    await User.findOneAndUpdate({
+      openid,
+    }, {
+      $push: {
+        rooms: {
+          id: room._id,
+          createAt: room.createdAt,
+        },
+      },
+    })
+
     ctx.body = {
       code: 0,
       msg: 'ok',
@@ -41,6 +52,73 @@ export const postCreateRoom = async (ctx: any) => {
     ctx.throw(400, error)
   }
 }
+
+/**
+ * PUT /room
+ * 新建房间.
+ */
+export const putJoinRoom = async (ctx: any) => {
+  await ctx.needWechatLogin()
+  const openid = ctx.session.openid
+
+  const {
+    oriAudioUrl,
+    revAudioUrl,
+    id,
+  } = ctx.request.fields
+
+  const [user, room] = await Promise.all([
+    await User.findOne({ openid }),
+    await Room.findById(id, {
+      _id: 0,
+    }),
+  ])
+
+  if (!room) {
+    ctx.throw(400, '没有该挑战！')
+  }
+  try {
+    await Promise.all([
+      Room.findByIdAndUpdate(id, {
+        $push: {
+          users: {
+            id: user._id,
+            nickName: user.profile.nickName,
+            avatarUrl: user.profile.avatarUrl,
+            oriAudio: {
+              url: oriAudioUrl,
+            },
+            revAudio: {
+              url: revAudioUrl,
+            },
+            createAt: room.createdAt,
+          },
+        },
+      }),
+      User.findOneAndUpdate({
+        openid,
+      }, {
+        $push: {
+          joinedRooms: {
+            id,
+            owner: {
+              nickName: user.profile.nickName,
+              avatarUrl: user.profile.avatarUrl,
+            },
+          },
+        },
+      }),
+    ])
+
+    ctx.body = {
+      code: 0,
+      msg: 'ok',
+    }
+  } catch (error) {
+    ctx.throw(400, error)
+  }
+}
+
 
 /**
  * GET /room

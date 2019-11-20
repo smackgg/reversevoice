@@ -12,6 +12,7 @@ interface RoomUserSchema {
   };
 }
 export type RoomDocument = mongoose.Document & {
+  createdAt: string;
   owner: RoomUserSchema;
   users: RoomUserSchema[];
 };
