@@ -47,12 +47,18 @@ var INITIAL_STATE: INITIAL_STATE = {
   },
 }
 
+const sortRoom = (rooms: any) => rooms.sort((a: any, b: any) => (new Date(a.createAt).getTime() - new Date(b.createAt).getTime()) > 0 ? -1 : 1)
+
 export default function user(state = INITIAL_STATE, action: AnyAction): INITIAL_STATE {
   switch (action.type) {
     case GET_USER_DETAIL_SUCCESS:
       return {
         ...state,
-        userDetail: action.data,
+        userDetail: {
+          ...action.data,
+          rooms: sortRoom(action.data.rooms),
+          joinedRooms: sortRoom(action.data.joinedRooms),
+        },
       }
     default:
       return state

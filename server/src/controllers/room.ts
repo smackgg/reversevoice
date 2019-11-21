@@ -100,6 +100,7 @@ export const putJoinRoom = async (ctx: any) => {
       }, {
         $push: {
           joinedRooms: {
+            createAt: room.createdAt,
             id,
             owner: {
               nickName: user.profile.nickName,
