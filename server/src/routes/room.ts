@@ -1,14 +1,14 @@
 import Router from 'koa-router'
-import { postCreateRoom, getRoom, putJoinRoom } from '../controllers/room'
+import { postCreateRoom, getRoom, putJoinRoom, putRoomUserStars } from '../controllers/room'
 
 const router = new Router<null, { needWechatLogin(): void }>()
 
-router.prefix('/api')
+router.prefix('/api/room')
 
-router.post('/room', async ctx => postCreateRoom(ctx))
-router.get('/room', async ctx => getRoom(ctx))
-router.put('/room', async ctx => putJoinRoom(ctx))
-
+router.post('/', async ctx => postCreateRoom(ctx))
+router.get('/', async ctx => getRoom(ctx))
+router.put('/', async ctx => putJoinRoom(ctx))
+router.put('/star', async ctx => putRoomUserStars(ctx))
 
 // router.put('/userinfo', async (ctx) => updateUserInfo(ctx))
 

@@ -134,3 +134,41 @@ export const getRoom = async (ctx: any) => {
     msg: 'ok',
   }
 }
+
+
+/**
+ * GET /room
+ * 获取房间详情
+ */
+export const putRoomUserStars = async (ctx: any) => {
+  await ctx.needWechatLogin()
+  // const { id } = ctx.query
+  // console.log(id)
+  const {
+    userId,
+    roomId,
+  } = ctx.request.fields
+
+  const openid = ctx.session.openid
+
+  const [user, room] = await Promise.all([
+    await User.findOne({ openid }),
+    await Room.findById(roomId),
+  ])
+
+  room.users = room.users.map((u) => {
+    if (u._id.toString() === userId) {
+      u.stars.push(user._id.toString())
+    }
+    return u
+  })
+
+
+  room.save()
+
+  ctx.body = {
+    data: room || null,
+    code: 0,
+    msg: 'ok',
+  }
+}

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 
 interface RoomUserSchema {
+  _id: string;
   id: string;
   nickName: string;
   avatarUrl: string;
@@ -14,7 +15,7 @@ interface RoomUserSchema {
 export type RoomDocument = mongoose.Document & {
   createdAt: string;
   owner: RoomUserSchema;
-  users: RoomUserSchema[];
+  users: (RoomUserSchema & { stars: string[] })[];
 };
 
 
@@ -32,7 +33,13 @@ const RoomUserSchema = {
 
 const roomSchema = new mongoose.Schema({
   owner: RoomUserSchema,
-  users: [RoomUserSchema],
+  users: [{
+    ...RoomUserSchema,
+    stars: {
+      type: Array,
+      default: [],
+    },
+  }],
 }, { timestamps: true })
 
 
