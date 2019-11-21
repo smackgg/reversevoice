@@ -55,9 +55,10 @@ export default function user(state = INITIAL_STATE, action: AnyAction): INITIAL_
       return {
         ...state,
         userDetail: {
+          ...state.userDetail,
           ...action.data,
-          rooms: sortRoom(action.data.rooms),
-          joinedRooms: sortRoom(action.data.joinedRooms),
+          rooms: sortRoom(action.data.rooms || []),
+          joinedRooms: sortRoom(action.data.joinedRooms || []),
         },
       }
     default:

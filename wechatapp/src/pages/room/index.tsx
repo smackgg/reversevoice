@@ -361,7 +361,7 @@ class Room extends Component {
           <View className="buttons">
             <View className="button" onClick={this.listenOriVoice}>听原声</View>
             {
-              (userDetail._id !== owner.id) || true && <Block>
+              (userDetail._id !== owner.id) && <Block>
                 <View className="button" onClick={this.joinChallenge}>参加挑战</View>
                 <View className="button" onClick={this.onNewChallenge}>我也要玩</View>
               </Block>

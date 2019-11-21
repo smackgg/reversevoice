@@ -12,13 +12,11 @@ qiniu.config({
 const upLoadFile = (bucket = 'revers-voice', filename: string, path: string) => {
   const imagesBucket = qiniu.bucket(bucket)
   return new Promise((resolve, reject) => {
-    // console.log(imageName)
     imagesBucket.putFile(filename, path, (err: any, reply: any) => {
       if (err) {
         reject(err)
         return
       }
-      console.log(reply)
       resolve(reply)
     })
   })
