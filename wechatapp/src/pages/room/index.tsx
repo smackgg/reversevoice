@@ -93,7 +93,7 @@ class Room extends Component {
   }
 
   $shareOptions = {
-    title: '倒放挑战！能听懂我说啥么？快来挑战啦~',
+    title: '倒放挑战！你能听懂我倒立洗头~',
     path: 'pages/index/index',
     imageUrl: '',
   }
