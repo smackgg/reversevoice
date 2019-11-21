@@ -11,7 +11,6 @@ import { AtActionSheet, AtActionSheetItem } from 'taro-ui'
 import { getRoomDetail, star } from '@/services/room'
 import { cError, getTimeStr } from '@/utils'
 
-
 import waveBlockIcon from '@/assets/images/wave-block.png'
 import { UserDetail } from '@/redux/reducers/user'
 import playIcon from '@/assets/images/play.png'
@@ -20,6 +19,9 @@ import stopIcon from '@/assets/images/stop.png'
 import srophyIcon from '@/assets/images/trophy.png'
 import hurtIcon from '@/assets/images/hurt.png'
 import hurtActiveIcon from '@/assets/images/hurt-active.png'
+// import closeIcon from '@/assets/images/close.png'
+// import closeBlackIcon from '@/assets/images/close-black.png'
+
 
 import './index.scss'
 
@@ -63,7 +65,8 @@ type PageState = {
   currentTime: number,
   activeIndex: number,
   playStatus: 0 | 1 | 2 // 0-停止 1-播放中 2-暂停,
-  showActionSheet: boolean
+  showActionSheet: boolean,
+  ratio: number,
 }
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
@@ -121,27 +124,31 @@ class Room extends Component {
     currentTime: 0,
     playStatus: 0,
     showActionSheet: false,
+    ratio: -1,
   }
 
   async componentDidShow() {
-    let innerAudioContext = Taro.createInnerAudioContext()
-    this.innerAudioContext = innerAudioContext
+    // let innerAudioContext = Taro.createInnerAudioContext()
+    // Taro.setInnerAudioOption({
+    //   obeyMuteSwitch: false,
+    // })
+    // this.innerAudioContext = innerAudioContext
 
-    this.innerAudioContext.onTimeUpdate(() => {
-      this.setState({
-        currentTime: this.innerAudioContext.currentTime,
-      })
-    })
-    this.innerAudioContext.onEnded(() => {
-      this.onStop(this.state.activeIndex)
-      this.setState({
-        currentTime: this.state.durationTime,
-      })
-    })
+    // this.innerAudioContext.onTimeUpdate(() => {
+    //   this.setState({
+    //     currentTime: this.innerAudioContext.currentTime,
+    //   })
+    // })
+    // this.innerAudioContext.onEnded(() => {
+    //   this.onStop(this.state.activeIndex)
+    //   this.setState({
+    //     currentTime: this.state.durationTime,
+    //   })
+    // })
 
     let { roomId } = this.$router.params
     this.roomId = roomId
-
+    console.log('roomId: ', this.roomId)
     this.$shareOptions.path = `pages/room/index?roomId=${roomId}`
 
     const [error, res] = await cError(getRoomDetail({
@@ -159,31 +166,68 @@ class Room extends Component {
   }
 
   initAudio = (url: string) => new Promise(resolve => {
+    Taro.setInnerAudioOption({
+      obeyMuteSwitch: false,
+    })
+
+    if (this.innerAudioContext && this.innerAudioContext.src === url && this.canplay) {
+      return resolve()
+    }
+
+    Taro.showLoading({
+      title: '加载资源中...',
+    })
     this.canplay = false
-    this.innerAudioContext.offCanplay()
+
+    if (this.innerAudioContext) {
+      this.innerAudioContext.destroy()
+      this.innerAudioContext.offCanplay()
+      this.innerAudioContext.offTimeUpdate()
+      this.innerAudioContext.offEnded()
+    }
+
+    this.innerAudioContext = Taro.createInnerAudioContext()
+
+    this.innerAudioContext.onTimeUpdate(() => {
+      this.setState({
+        currentTime: this.innerAudioContext.currentTime,
+      })
+    })
+
+    this.innerAudioContext.onEnded(() => {
+      this.onStop(this.state.activeIndex)
+      this.setState({
+        currentTime: this.state.durationTime,
+      })
+    })
+
     this.innerAudioContext.onCanplay(() => {
+      Taro.hideLoading()
       resolve()
       this.canplay = true
     })
 
-    this.innerAudioContext.src = url
+    if (this.innerAudioContext.src !== url) {
+      this.innerAudioContext.src = url
+      Taro.showLoading({
+        title: '加载资源中...',
+      })
+    }
 
   })
 
   onPlay = async (index: number) => {
-    const { playStatus, owner, activeIndex } = this.state
-    if (index === activeIndex && this.canplay) {
-      this.innerAudioContext.play()
-    } else {
-      // 暂停
-      if (playStatus !== 2) {
-        if (index === 0) {
-          this.initAudio(owner.revAudio.url).then(() => {
-            this.innerAudioContext.play()
-          })
-        }
-      }
+    const { playStatus, owner, activeIndex, users } = this.state
+
+    // 非暂停状态 需要先停止
+    if (playStatus !== 2) {
+      this.onStop(activeIndex)
     }
+
+    const url = index === 0 ? owner.revAudio.url : users[index - 1].revAudio.url
+    this.initAudio(url).then(() => {
+      this.innerAudioContext.play()
+    })
     this.setState({
       activeIndex: index,
       playStatus: 1,
@@ -192,13 +236,13 @@ class Room extends Component {
   }
 
   onStop = (activeIndex: number) => {
-    if (activeIndex === this.state.activeIndex) {
-      this.setState({
-        currentTime: 0,
-        playStatus: 0,
-      })
+    if (activeIndex === this.state.activeIndex && this.innerAudioContext) {
       this.innerAudioContext.stop()
     }
+    this.setState({
+      currentTime: 0,
+      playStatus: 0,
+    })
   }
 
   onPause = (activeIndex: number) => {
@@ -212,19 +256,21 @@ class Room extends Component {
 
   // 听原声
   listenOriVoice = () => {
-    const { owner, activeIndex } = this.state
-    if (0 === activeIndex && this.canplay) {
-      this.innerAudioContext.play()
-    } else {
-      this.initAudio(owner.oriAudio.url).then(() => {
-        this.innerAudioContext.play()
-      })
-    }
-
     this.setState({
       activeIndex: 0,
-      playStatus: 1,
+      playStatus: 0,
     })
+    const { owner, activeIndex } = this.state
+    this.onStop(activeIndex)
+
+    this.initAudio(owner.oriAudio.url).then(() => {
+      this.innerAudioContext.play()
+      this.setState({
+        activeIndex: 0,
+        playStatus: 1,
+      })
+    })
+
   }
 
   onNewChallenge = () => {
@@ -235,12 +281,8 @@ class Room extends Component {
 
   joinChallenge = () => {
     Taro.navigateTo({
-      url: `/pages/challenge/index?roomId${this.roomId}`,
+      url: `/pages/challenge/index?roomId=${this.roomId}`,
     })
-  }
-
-  onShare = () => {
-
   }
 
   goPage = (url: string) => {
@@ -256,7 +298,6 @@ class Room extends Component {
   }
 
   onStar = async (userId: string, stared: boolean) => {
-    console.log(stared)
     // 暂时不做取消点赞
     if (stared) {
       return
@@ -277,9 +318,22 @@ class Room extends Component {
     }
   }
 
-  render() {
-    const { owner, users, currentTime, activeIndex, playStatus, showActionSheet } = this.state
+  onChange = (index: number) => {
+    this.onStop(this.state.activeIndex)
+    this.setState({
+      activeIndex: index,
+    })
+  }
 
+  changeRatio = (ratio: number) => {
+    const r = ratio === this.state.ratio ? -1 : ratio
+    this.setState({
+      ratio: r,
+    })
+  }
+
+  render() {
+    const { owner, users, currentTime, activeIndex, playStatus, showActionSheet, ratio } = this.state
     const { userDetail } = this.props
 
     return (
@@ -289,7 +343,7 @@ class Room extends Component {
           <View className="play-block">
             <View className="line">
               <Image className={classNames('wave-block', { active: activeIndex === 0 && playStatus === 1 })} src={waveBlockIcon}
-                style={{ left: `${parseInt('' + (activeIndex === 0 ? (currentTime / getDurationByFilePath(owner.revAudio.url)) * 600 : 0))}rpx` }}
+                style={{ left: `${parseInt('' + (activeIndex === 0 ? (currentTime / getDurationByFilePath(owner.revAudio.url)) * 460 : 0))}rpx` }}
               ></Image>
             </View>
             <View className="time">{getTimeStr(currentTime * 1000).str}/{getTimeStr(getDurationByFilePath(owner.revAudio.url) * 1000).str}</View>
@@ -299,17 +353,17 @@ class Room extends Component {
                   ? <View className="control-button play" onClick={this.onPause.bind(this, 0)}><Image className="pause-icon" src={pauseIcon}></Image></View>
                   : <View className="control-button play" onClick={this.onPlay.bind(this, 0)}><Image className="play-icon" src={playIcon}></Image></View>
               }
-              <View className="control-button stop"><Image className="stop-icon" src={stopIcon} onClick={this.onStop.bind(this, 0)}></Image></View>
-              <View className="control-button ratio1">0.75</View>
-              <View className="control-button ratio2">0.5</View>
+              <View className="control-button stop" onClick={this.onStop.bind(this, 0)}><Image className="stop-icon" src={stopIcon}></Image></View>
+              {/* <View className={classNames('control-button ratio1', { active: ratio === 0 })} onClick={() => { this.changeRatio(0) }}><Image className="ratio-icon" src={ratio === 0 ? closeIcon : closeBlackIcon}></Image>0.75</View>
+              <View className={classNames('control-button ratio2', { active: ratio === 1 })}onClick={() => { this.changeRatio(1) }}><Image className="ratio-icon" src={ratio === 1 ? closeIcon : closeBlackIcon}></Image>0.5</View> */}
             </View>
           </View>
           <View className="buttons">
             <View className="button" onClick={this.listenOriVoice}>听原声</View>
             {
-              userDetail._id !== owner.id && <Block>
+              (userDetail._id !== owner.id) || true && <Block>
                 <View className="button" onClick={this.joinChallenge}>参加挑战</View>
-                <View className="button" onClick={this.onNewChallenge}>发起挑战</View>
+                <View className="button" onClick={this.onNewChallenge}>我也要玩</View>
               </Block>
             }
             {
@@ -326,17 +380,38 @@ class Room extends Component {
               {
                 users.map((user, index) => {
                   const stared = !!user.stars.find(id => id === owner.id)
-
-                  return <View key={user._id} className={classNames('item')}>
-                    <View className="item-index">{index + 1}、</View>
-                    <View><Image className="item-avatar" src={user.avatarUrl}></Image></View>
-                    <View className="button">试听</View>
-                    <View className="item-hurt" onClick={() => { this.onStar(user._id || '', stared)}}>
-                      {
-                        stared ? <Image className="icon" src={hurtActiveIcon}></Image> : <Image className="icon" src={hurtIcon}></Image>
-                      }
-                      <View className="count">{user.stars.length}</View>
+                  const active = activeIndex === index + 1
+                  return <View className="item-wrapper" key={user._id}>
+                    <View className={classNames('item')}>
+                      <View className="item-index">{index + 1}、</View>
+                      <View><Image className="item-avatar" src={user.avatarUrl}></Image></View>
+                      <View className={classNames('button', { hidden: active  })} onClick={this.onChange.bind(this, index + 1)}>试听</View>
+                      <View className="item-hurt" onClick={() => { this.onStar(user._id || '', stared) }}>
+                        {
+                          stared ? <Image className="icon" src={hurtActiveIcon}></Image> : <Image className="icon" src={hurtIcon}></Image>
+                        }
+                        <View className="count">{user.stars.length}</View>
+                      </View>
+                      <View className={classNames('button close', { hidden: !active })} onClick={this.onChange.bind(this, 0)}>收起</View>
                     </View>
+                    {
+                      active && <View className="controls">
+                        <View className="line">
+                          <Image className={classNames('wave-block', { active: active && playStatus === 1 })} src={waveBlockIcon}
+                            style={{ left: `${parseInt('' + (active ? (currentTime / getDurationByFilePath(user.revAudio.url)) * 360 : 0))}rpx` }}
+                          ></Image>
+                        </View>
+                        <View className="time">{getTimeStr(currentTime * 1000).str}/{getTimeStr(getDurationByFilePath(user.revAudio.url) * 1000).str}</View>
+                        <View className="control-buttons">
+                          {
+                            (active && playStatus === 1)
+                              ? <View className="control-button play" onClick={this.onPause.bind(this, index + 1)}><Image className="pause-icon" src={pauseIcon}></Image></View>
+                              : <View className="control-button play" onClick={this.onPlay.bind(this, index + 1)}><Image className="play-icon" src={playIcon}></Image></View>
+                          }
+                          <View className="control-button stop"><Image className="stop-icon" src={stopIcon} onClick={this.onStop.bind(this, index + 1)}></Image></View>
+                        </View>
+                      </View>
+                    }
                   </View>
                 })
               }
