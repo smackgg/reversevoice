@@ -36,3 +36,23 @@ button {
 .text-color-red {
   color: $text-color-red;
 }
+
+button {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 100%;
+  vertical-align: baseline;
+  font-family: inherit;
+  font-weight: inherit;
+  color: inherit;
+  appearance: none;
+  font-smoothing: antialiased;
+  line-height: 1;
+  outline: none;
+  &::after {
+    border: none;
+  }
+}
+

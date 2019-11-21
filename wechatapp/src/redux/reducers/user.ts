@@ -6,8 +6,22 @@ import {
 } from '../actions/user'
 
 
+
 export type UserDetail = {
-  isLogin: boolean
+  isLogin: boolean;
+  _id: string;
+  rooms?: {
+    id: string,
+    createAt: string,
+    owner: {
+      avatarUrl: string,
+      nickName: string,
+    }
+  }[],
+  joinedRooms?: {
+    id: string,
+    createAt: string,
+  }[],
 }
 
 export type INITIAL_STATE = {
@@ -17,6 +31,7 @@ export type INITIAL_STATE = {
 var INITIAL_STATE: INITIAL_STATE = {
   userDetail: {
     isLogin: false,
+    _id: '',
   },
 }
 

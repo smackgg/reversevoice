@@ -90,6 +90,7 @@ class App extends Component {
       'pages/authorize/index',
       'pages/room/index',
       'pages/challenge/index',
+      'pages/sharePoster/index',
     ],
     window: {
       backgroundTextStyle: 'light',

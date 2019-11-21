@@ -1,0 +1,17 @@
+.container {
+  min-height: 100vh;
+  background: $color-gray;
+  padding: 40rpx 0;
+
+  .canvas-wrapper {
+    margin: 0 auto;
+    box-shadow: 0 4rpx 64rpx 0 rgba(0, 0, 0, .1);
+    border-radius: 16rpx;
+    overflow: hidden;
+  }
+
+  .button {
+    margin: 40rpx 75rpx;
+    padding: 40rpx;
+  }
+}

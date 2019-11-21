@@ -11,3 +11,8 @@ export const login = (data: { code: string; iv: string; encryptedData: string })
 export const userDetail = () => request({
   url: '/api/user/detail',
 })
+
+export const getWxacodeunlimit = (data: { page: string, scene: string }) => request({
+  url: '/api/wechat/getwxacodeunlimit',
+  data,
+})

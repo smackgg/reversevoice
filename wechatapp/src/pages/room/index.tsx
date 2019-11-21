@@ -1,17 +1,20 @@
 import { ComponentClass } from 'react'
 import Taro, { Component, Config, InnerAudioContext } from '@tarojs/taro'
 // import { connect } from '@tarojs/redux'
-import { View, Block, Image } from '@tarojs/components'
+import { View, Block, Image, Button } from '@tarojs/components'
 import classNames from 'classnames'
-import { saveFile, reverse, getFiles, getDurationByFilePath } from '@/utils/reverse'
+import { getDurationByFilePath } from '@/utils/reverse'
 import withShare from '@/components/@withShare'
-import { getRecordAuth } from '@/utils/auth'
+import { connect } from '@tarojs/redux'
+import { AtActionSheet, AtActionSheetItem } from 'taro-ui'
+
 import { getRoomDetail } from '@/services/room'
 import { cError, getTimeStr } from '@/utils'
 import waveBlockIcon from '@/assets/images/wave-block.png'
 import playIcon from '@/assets/images/play.png'
 import pauseIcon from '@/assets/images/pause.png'
 import stopIcon from '@/assets/images/stop.png'
+import { UserDetail } from '@/redux/reducers/user'
 
 import './index.scss'
 
@@ -26,6 +29,7 @@ import './index.scss'
 // #endregion
 
 type PageStateProps = {
+  userDetail: UserDetail
 }
 
 type PageDispatchProps = {
@@ -43,6 +47,7 @@ interface RoomUserSchema {
   revAudio: {
     url: string;
   };
+  id: string;
 }
 
 type PageState = {
@@ -51,7 +56,8 @@ type PageState = {
   durationTime: number,
   currentTime: number,
   activeIndex: number,
-  playStatus: 0 | 1 | 2 // 0-停止 1-播放中 2-暂停
+  playStatus: 0 | 1 | 2 // 0-停止 1-播放中 2-暂停,
+  showActionSheet: boolean
 }
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
@@ -59,6 +65,10 @@ type IProps = PageStateProps & PageDispatchProps & PageOwnProps
 interface Room {
   props: IProps
 }
+
+@connect(({ user }) => ({
+  userDetail: user.userDetail,
+}))
 
 @withShare()
 class Room extends Component {
@@ -74,8 +84,9 @@ class Room extends Component {
   }
 
   $shareOptions = {
-    title: '能听懂我说啥么？最近很火的倒放录音来啦~',
+    title: '倒放挑战！能听懂我说啥么？快来挑战啦~',
     path: 'pages/index/index',
+    imageUrl: '',
   }
 
   roomId: string
@@ -97,16 +108,21 @@ class Room extends Component {
       revAudio: {
         url: '',
       },
+      id: '',
     },
     users: [],
     durationTime: 0,
     currentTime: 0,
     playStatus: 0,
+    showActionSheet: false,
   }
 
   async componentDidShow() {
     let { roomId } = this.$router.params
     this.roomId = roomId
+
+    this.$shareOptions.path = `pages/room/index?roomId=${roomId}`
+
     const [error, res] = await cError(getRoomDetail({
       id: this.roomId,
     }))
@@ -222,8 +238,25 @@ class Room extends Component {
     })
   }
 
+  onShare = () => {
+
+  }
+
+  goPage = (url: string) => {
+    Taro.navigateTo({
+      url,
+    })
+  }
+
+  onToggleActionSheet = (status: boolean) => {
+    this.setState({
+      showActionSheet: status,
+    })
+  }
+
   render() {
-    const { owner, currentTime, activeIndex, playStatus } = this.state
+    const { owner, currentTime, activeIndex, playStatus, showActionSheet } = this.state
+    const { userDetail } = this.props
     // console.log(activeIndex === 0 && playStatus === 1, playStatus, activeIndex)
     return (
       <View className="room">
@@ -249,10 +282,26 @@ class Room extends Component {
           </View>
           <View className="buttons">
             <View className="button" onClick={this.listenOriVoice}>听原声</View>
-            <View className="button" onClick={this.joinChallenge}>参加挑战</View>
-            <View className="button" onClick={this.onNewChallenge}>发起挑战</View>
+            {
+              userDetail._id !== owner.id && <Block>
+                <View className="button" onClick={this.joinChallenge}>参加挑战</View>
+                <View className="button" onClick={this.onNewChallenge}>发起挑战</View>
+              </Block>
+            }
+            {
+              userDetail._id === owner.id && <View className="button" onClick={this.onToggleActionSheet.bind(this, true)}>分享挑战</View>
+            }
           </View>
         </View>
+        {/* 分享弹窗 */}
+        <AtActionSheet cancelText="取消" isOpened={showActionSheet} onClose={this.onToggleActionSheet.bind(this, false)}>
+          <AtActionSheetItem>
+            <Button openType="share" className="share-button">直接分享</Button>
+          </AtActionSheetItem>
+          <AtActionSheetItem onClick={this.goPage.bind(this, `/pages/sharePoster/index?roomId=${this.roomId}`, false)}>
+            生成海报
+          </AtActionSheetItem>
+        </AtActionSheet>
       </View>
     )
   }
