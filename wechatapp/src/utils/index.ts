@@ -97,3 +97,24 @@ export const prod = process.env.NODE_ENV === 'production'
 
 export const API_URL = prod ? envConfig.API_URL : envConfig.API_URL_LOCAL
 // console.log(prod)
+
+
+const fsm = Taro.getFileSystemManager()
+const FILE_BASE_NAME = 'tmp_base64src'
+
+export const base64src = (base64data: string): Promise<string> => new Promise((resolve, reject) => {
+  console.log(base64data)
+  const filePath = `${wx.env.USER_DATA_PATH}/${FILE_BASE_NAME}.jpg`
+  const buffer = Taro.base64ToArrayBuffer(base64data)
+  fsm.writeFile({
+    filePath,
+    data: buffer,
+    encoding: 'binary',
+    success() {
+      resolve(filePath)
+    },
+    fail() {
+      reject(new Error('ERROR_BASE64SRC_WRITE'))
+    },
+  })
+})
