@@ -105,6 +105,7 @@ const routes: {
   user: require('./routes/user'),
   file: require('./routes/file'),
   room: require('./routes/room'),
+  wechat: require('./routes/wechat'),
   // users: require('./routes/users'),
   // 公共 api
   // user: require('./routes/user'),
