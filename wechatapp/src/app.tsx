@@ -91,6 +91,7 @@ class App extends Component {
       'pages/room/index',
       'pages/challenge/index',
       'pages/sharePoster/index',
+      'pages/account/index',
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -123,7 +124,7 @@ class App extends Component {
         //   text: '购物车',
         // },
         {
-          pagePath: 'pages/index/index',
+          pagePath: 'pages/account/index',
           iconPath: 'assets/images/account.png',
           selectedIconPath: 'assets/images/account-selected.png',
           text: '我的',

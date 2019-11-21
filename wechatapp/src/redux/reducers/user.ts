@@ -8,19 +8,25 @@ import {
 
 
 export type UserDetail = {
+  profile: {
+    avatarUrl: string,
+    nickName: string,
+  }
   isLogin: boolean;
   _id: string;
   rooms?: {
+    _id: string,
+    id: string,
+    createAt: string,
+  }[],
+  joinedRooms?: {
+    _id: string,
     id: string,
     createAt: string,
     owner: {
       avatarUrl: string,
       nickName: string,
     }
-  }[],
-  joinedRooms?: {
-    id: string,
-    createAt: string,
   }[],
 }
 
@@ -32,6 +38,12 @@ var INITIAL_STATE: INITIAL_STATE = {
   userDetail: {
     isLogin: false,
     _id: '',
+    rooms: [],
+    joinedRooms: [],
+    profile: {
+      avatarUrl: '',
+      nickName: '',
+    },
   },
 }
 
