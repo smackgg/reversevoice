@@ -5,10 +5,11 @@ import { View, Block } from '@tarojs/components'
 import classNames from 'classnames'
 // import { AtIcon } from 'taro-ui'
 import { getTimeStr } from '@/utils'
-import { saveFile, reverse, LocalFileInfo } from '@/utils/reverse'
+import { saveFile, reverse, LocalFileInfo, getFiles } from '@/utils/reverse'
 import withShare from '@/components/@withShare'
 import { getRecordAuth } from '@/utils/auth'
 import { UserDetail } from '@/redux/reducers/user'
+import { FileItem } from '@/components'
 import './index.scss'
 
 // #region 书写注意
@@ -35,7 +36,7 @@ type PageOwnProps = {
 type PageState = {
   recording: boolean,
   time: number,
-  fileList?: LocalFileInfo[],
+  file?: LocalFileInfo,
 }
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
@@ -70,11 +71,12 @@ class Index extends Component {
   timer?: number
   RecorderManager: RecorderManager
   tempFilePath?: string
+  fileRef?: any
 
   state: PageState = {
     recording: false,
     time: 0,
-    fileList: undefined,
+    file: undefined,
   }
 
   componentWillMount() {
@@ -100,8 +102,14 @@ class Index extends Component {
       try {
         // 保存文件
         const fileInfo = await saveFile(res.tempFilePath)
-        await reverse(fileInfo)
+        const index = await reverse(fileInfo)
         // await this.getFiles(true)
+        const files = await getFiles()
+
+        this.setState({
+          file: files.filter(file => file.index === index)[0],
+        })
+
         Taro.showToast({
           title: '保存录音成功',
         })
@@ -177,22 +185,40 @@ class Index extends Component {
     }
   }
 
+  onRecord = () => {
+    this.setState({
+      file: null,
+    })
+  }
+
+  onChallenge = () => {
+    this.fileRef && this.fileRef.onShare()
+  }
+
   render() {
-    const { recording, time } = this.state
+    const { recording, time, file } = this.state
     const { s, ms } = getTimeStr(time)
 
     return (
       <View className={classNames('index', { active: recording })}>
-        <View>
+        {
+          file && <View className="file-wrapper">
+            <FileItem noIcon file={file} ref={e => (this.fileRef = e)} active onShowDetail={() => { }} />
+            <View className="buttons">
+              <View className="button" onClick={this.onChallenge}>去分享</View>
+              <View className="button ghost" onClick={this.onRecord}>重新录制</View>
+            </View>
+          </View>
+        }
+
+        <View className="info">
           <View>游戏规则：</View>
-          <View>假设两个人 A 和 B。</View>
-          <View>A 录音后将录音进行反转，将反转之后的录音给 B 听。</View>
-          <View>B 模仿倒放后的录音，再进行反转。</View>
-          <View>B 通过反转之后的声音，猜测 A 录的原声。</View>
-          <View></View>
-          <View></View>
+          <View>1. 假设两个人 A 和 B 。</View>
+          <View>2. A 录音并进行反转，将反转后的录音给 B 听。</View>
+          <View>3. B 模仿倒放后的录音，再进行反转。</View>
+          <View>4. B 通过反转后的声音，猜测 A 录的原声。</View>
         </View>
-        <View className="record">
+        <View className={classNames('record', { hidden: !!file })}>
           {
               recording && <Block>
                 <View className="record-title">正在录音中</View>

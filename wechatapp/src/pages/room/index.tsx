@@ -118,6 +118,25 @@ class Room extends Component {
   }
 
   async componentDidShow() {
+    let innerAudioContext = Taro.createInnerAudioContext()
+    this.innerAudioContext = innerAudioContext
+
+    this.innerAudioContext.onTimeUpdate(() => {
+      this.setState({
+        currentTime: this.innerAudioContext.currentTime,
+      })
+    })
+    this.innerAudioContext.onEnded(() => {
+      this.onStop(this.state.activeIndex)
+      this.setState({
+        currentTime: this.state.durationTime,
+      })
+    })
+    // this.innerAudioContext.onCanplay(() => {
+    //   console.log(1111)
+    //   this.canplay = true
+    // })
+
     let { roomId } = this.$router.params
     this.roomId = roomId
 
@@ -139,56 +158,41 @@ class Room extends Component {
 
   initAudio = (url: string) => new Promise(resolve => {
     this.canplay = false
-    if (this.innerAudioContext) {
-      this.innerAudioContext.offCanplay()
-      this.innerAudioContext.offPlay()
-      this.innerAudioContext.offTimeUpdate()
-      this.innerAudioContext.offEnded()
-      this.innerAudioContext.destroy()
-    }
-    let innerAudioContext = Taro.createInnerAudioContext()
-    this.innerAudioContext = innerAudioContext
-    this.innerAudioContext.src = url
-
-    // 获取音频时长
-    innerAudioContext.onCanplay(() => {
+    this.innerAudioContext.offCanplay()
+    this.innerAudioContext.onCanplay(() => {
       resolve()
+      this.canplay = true
     })
+    // if (this.innerAudioContext) {
+    //   this.innerAudioContext.offCanplay()
+    //   this.innerAudioContext.offPlay()
+    //   this.innerAudioContext.offTimeUpdate()
+    //   this.innerAudioContext.offEnded()
+    //   this.innerAudioContext.destroy()
+    // }
+    // let innerAudioContext = Taro.createInnerAudioContext()
+    // this.innerAudioContext = innerAudioContext
+    this.innerAudioContext.src = url
+    // console.log(this.innerAudioContext)
 
-    // innerAudioContext.onPlay(() => {
-    //   this.setState({
-    //     durationTime: innerAudioContext.duration,
-    //   })
-    // })
-    innerAudioContext.onTimeUpdate(() => {
-      this.setState({
-        currentTime: innerAudioContext.currentTime,
-      })
-    })
-    innerAudioContext.onEnded(() => {
-      this.onStop(this.state.activeIndex)
-      this.setState({
-        currentTime: this.state.durationTime,
-      })
-    })
   })
 
-  onPlay = async (activeIndex: number) => {
-    // if (!this.canplay) {
-    //   return
-    // }
-    const { playStatus, owner } = this.state
-
-    // 暂停
-    if (playStatus !== 2) {
-      if (activeIndex === 0) {
-        this.initAudio(owner.revAudio.url).then(() => {
-          this.innerAudioContext.play()
-        })
+  onPlay = async (index: number) => {
+    const { playStatus, owner, activeIndex } = this.state
+    if (index === activeIndex && this.canplay) {
+      this.innerAudioContext.play()
+    } else {
+      // 暂停
+      if (playStatus !== 2) {
+        if (index === 0) {
+          this.initAudio(owner.revAudio.url).then(() => {
+            this.innerAudioContext.play()
+          })
+        }
       }
     }
     this.setState({
-      activeIndex: activeIndex,
+      activeIndex: index,
       playStatus: 1,
     })
     // this.innerAudioContext.play()
@@ -215,10 +219,14 @@ class Room extends Component {
 
   // 听原声
   listenOriVoice = () => {
-    const { owner } = this.state
-    this.initAudio(owner.oriAudio.url).then(() => {
+    const { owner, activeIndex } = this.state
+    if (0 === activeIndex && this.canplay) {
       this.innerAudioContext.play()
-    })
+    } else {
+      this.initAudio(owner.oriAudio.url).then(() => {
+        this.innerAudioContext.play()
+      })
+    }
 
     this.setState({
       activeIndex: 0,
@@ -257,7 +265,7 @@ class Room extends Component {
   render() {
     const { owner, currentTime, activeIndex, playStatus, showActionSheet } = this.state
     const { userDetail } = this.props
-    // console.log(activeIndex === 0 && playStatus === 1, playStatus, activeIndex)
+
     return (
       <View className="room">
         <View className="owner">
@@ -265,7 +273,7 @@ class Room extends Component {
           <View className="play-block">
             <View className="line">
               <Image className={classNames('wave-block', { active: activeIndex === 0 && playStatus === 1 })} src={waveBlockIcon}
-                style={{ left: `${parseInt('' + (activeIndex === 0 ? (currentTime / getDurationByFilePath(owner.revAudio.url)) * 380 : 0))}rpx` }}
+                style={{ left: `${parseInt('' + (activeIndex === 0 ? (currentTime / getDurationByFilePath(owner.revAudio.url)) * 600 : 0))}rpx` }}
               ></Image>
             </View>
             <View className="time">{getTimeStr(currentTime * 1000).str}/{getTimeStr(getDurationByFilePath(owner.revAudio.url) * 1000).str}</View>

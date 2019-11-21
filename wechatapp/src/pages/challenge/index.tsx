@@ -104,8 +104,7 @@ class Challenge extends Component {
         this.setState({
           file: files.filter(file => file.index === index)[0],
         })
-        // await reverse(fileInfo)
-        // await this.getFiles(true)
+
         Taro.showToast({
           title: '保存录音成功',
         })

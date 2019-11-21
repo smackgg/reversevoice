@@ -5,6 +5,15 @@
   box-sizing: border-box;
   padding-bottom: 500rpx;
 
+  .file-wrapper {
+    padding: 60rpx 40rpx;
+  }
+
+  .info {
+    padding: 60rpx 40rpx;
+    font-size: 30rpx;
+    line-height: 60rpx;
+  }
   &.active {
     .record {
       height: 500rpx;
@@ -19,7 +28,14 @@
     background: #1b1c20;
     border-radius: 20rpx 20rpx 0 0;
     transform: translateZ(0);
-    transition: height .2s;
+    transition: all .2s;
+
+    &.hidden {
+      // height: 0 !important;
+      // transform: translateY();
+      bottom: -200rpx;
+      overflow: hidden;
+    }
 
     &-title {
       font-size: 40rpx;
@@ -86,6 +102,33 @@
         &:active {
           background: #803531;
         }
+      }
+    }
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: space-around;
+    .button {
+      margin: 20rpx;
+      // width: 300rpx;
+      padding: 0rpx 80rpx;
+      height: 90rpx;
+      text-align: center;
+      line-height: 86rpx;
+      color: #fff;
+      font-size: 30rpx;
+      box-sizing: border-box;
+      border: 4rpx solid #37C15F;
+      background: #37C15F;
+      border-radius: 20rpx;
+
+      &.ghost {
+        background: transparent;
+        color: #37C15F;
+      }
+      &:active {
+        opacity: .8;
       }
     }
   }

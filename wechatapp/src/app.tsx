@@ -101,7 +101,7 @@ class App extends Component {
     tabBar: {
       color: '#707070',
       selectedColor: '#1AAD19',
-      borderStyle: 'white',
+      // borderStyle: 'black',
       backgroundColor: '#1b1c20',
       list: [
         {

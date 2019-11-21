@@ -1,6 +1,13 @@
 import Taro from '@tarojs/taro'
+import { store } from '../redux/store'
 
 export const getRecordAuth = () => {
+  if (!store.getState().user.userDetail.isLogin) {
+    Taro.navigateTo({
+      url: '/pages/authorize/index',
+    })
+    return Promise.resolve(false)
+  }
   return new Promise((resolve) => {
     Taro.getSetting({
       success(res: any) {
@@ -13,7 +20,6 @@ export const getRecordAuth = () => {
               resolve(true)
             },
             fail() {
-              // console.log('err', err, 11111)
               Taro.showModal({
                 title: '该功能授权使用',
                 content: '是否进入授权页面并开启“录音功能”权限？',

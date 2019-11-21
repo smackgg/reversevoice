@@ -132,8 +132,10 @@ class Auth extends Component {
   }
 
   // 跳转回首页
-  goHome = () => Taro.navigateTo({
-    url: '/pages/index/index',
+  goHome = () => Taro.navigateBack({
+    fail: () => Taro.switchTab({
+      url: '/pages/index/index',
+    }),
   })
 
   render () {
