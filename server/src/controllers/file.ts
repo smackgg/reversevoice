@@ -21,7 +21,7 @@ type QiniuReply = {
 }
 
 // 反转视频
-const reverseVoice = (filepath: string, fileName: string): Promise<{
+const reverseVoice = (filepath: string): Promise<{
   path: string;
   duration: number;
 }> => new Promise((resolve, reject) => {
@@ -61,7 +61,7 @@ const reverseVoice = (filepath: string, fileName: string): Promise<{
     .toFormat('mp3')
     // .duration(duration / 1000)
     .save(publicPath + saveFilePath)
-    .on('end', (res) => {
+    .on('end', () => {
       ffmpeg.ffprobe(publicPath + saveFilePath, (err, metadata) => {
         // console.log(err, metadata)
         resolve({
