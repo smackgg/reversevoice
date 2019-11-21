@@ -79,11 +79,11 @@ const reverseVoice = (filepath: string): Promise<{
 export const postMp3Reverse = async (ctx: any) => {
   const file = ctx.request.files[0]
 
-  if (!file) {
+  if (!file || !file.path) {
     return ctx.throw(400, '请上传正确的文件')
   }
   // const reply = await reverseVoice(file.path)
-  const [err, reverseRes] = await cErr(reverseVoice(file.path, file.name))
+  const [err, reverseRes] = await cErr(reverseVoice(file.path))
   if (err) {
     ctx.throw(500, err)
     return
