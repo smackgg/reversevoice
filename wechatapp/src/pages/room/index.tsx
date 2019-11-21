@@ -8,13 +8,18 @@ import withShare from '@/components/@withShare'
 import { connect } from '@tarojs/redux'
 import { AtActionSheet, AtActionSheetItem } from 'taro-ui'
 
-import { getRoomDetail } from '@/services/room'
+import { getRoomDetail, star } from '@/services/room'
 import { cError, getTimeStr } from '@/utils'
+
+
 import waveBlockIcon from '@/assets/images/wave-block.png'
+import { UserDetail } from '@/redux/reducers/user'
 import playIcon from '@/assets/images/play.png'
 import pauseIcon from '@/assets/images/pause.png'
 import stopIcon from '@/assets/images/stop.png'
-import { UserDetail } from '@/redux/reducers/user'
+import srophyIcon from '@/assets/images/trophy.png'
+import hurtIcon from '@/assets/images/hurt.png'
+import hurtActiveIcon from '@/assets/images/hurt-active.png'
 
 import './index.scss'
 
@@ -48,11 +53,12 @@ interface RoomUserSchema {
     url: string;
   };
   id: string;
+  _id?: string;
 }
 
 type PageState = {
   owner: RoomUserSchema,
-  users: RoomUserSchema[],
+  users: (RoomUserSchema & { stars: string[] })[],
   durationTime: number,
   currentTime: number,
   activeIndex: number,
@@ -132,10 +138,6 @@ class Room extends Component {
         currentTime: this.state.durationTime,
       })
     })
-    // this.innerAudioContext.onCanplay(() => {
-    //   console.log(1111)
-    //   this.canplay = true
-    // })
 
     let { roomId } = this.$router.params
     this.roomId = roomId
@@ -163,17 +165,8 @@ class Room extends Component {
       resolve()
       this.canplay = true
     })
-    // if (this.innerAudioContext) {
-    //   this.innerAudioContext.offCanplay()
-    //   this.innerAudioContext.offPlay()
-    //   this.innerAudioContext.offTimeUpdate()
-    //   this.innerAudioContext.offEnded()
-    //   this.innerAudioContext.destroy()
-    // }
-    // let innerAudioContext = Taro.createInnerAudioContext()
-    // this.innerAudioContext = innerAudioContext
+
     this.innerAudioContext.src = url
-    // console.log(this.innerAudioContext)
 
   })
 
@@ -262,8 +255,31 @@ class Room extends Component {
     })
   }
 
+  onStar = async (userId: string, stared: boolean) => {
+    console.log(stared)
+    // 暂时不做取消点赞
+    if (stared) {
+      return
+    }
+    const [error, res] = await cError(star({
+      userId,
+      roomId: this.roomId,
+    }))
+    if (!error) {
+      this.setState({
+        users: res.data.users,
+      })
+    } else {
+      Taro.showToast({
+        title: '点赞失败，请稍候重试~',
+        icon: 'none',
+      })
+    }
+  }
+
   render() {
-    const { owner, currentTime, activeIndex, playStatus, showActionSheet } = this.state
+    const { owner, users, currentTime, activeIndex, playStatus, showActionSheet } = this.state
+
     const { userDetail } = this.props
 
     return (
@@ -277,15 +293,15 @@ class Room extends Component {
               ></Image>
             </View>
             <View className="time">{getTimeStr(currentTime * 1000).str}/{getTimeStr(getDurationByFilePath(owner.revAudio.url) * 1000).str}</View>
-            <View className="play-buttons">
+            <View className="control-buttons">
               {
                 (activeIndex === 0 && playStatus === 1)
-                  ? <View className="button play" onClick={this.onPause.bind(this, 0)}><Image className="pause-icon" src={pauseIcon}></Image></View>
-                  : <View className="button play" onClick={this.onPlay.bind(this, 0)}><Image className="play-icon" src={playIcon}></Image></View>
+                  ? <View className="control-button play" onClick={this.onPause.bind(this, 0)}><Image className="pause-icon" src={pauseIcon}></Image></View>
+                  : <View className="control-button play" onClick={this.onPlay.bind(this, 0)}><Image className="play-icon" src={playIcon}></Image></View>
               }
-              <View className="button stop"><Image className="stop-icon" src={stopIcon} onClick={this.onStop.bind(this, 0)}></Image></View>
-              <View className="button ratio1">0.75</View>
-              <View className="button ratio2">0.5</View>
+              <View className="control-button stop"><Image className="stop-icon" src={stopIcon} onClick={this.onStop.bind(this, 0)}></Image></View>
+              <View className="control-button ratio1">0.75</View>
+              <View className="control-button ratio2">0.5</View>
             </View>
           </View>
           <View className="buttons">
@@ -300,6 +316,32 @@ class Room extends Component {
               userDetail._id === owner.id && <View className="button" onClick={this.onToggleActionSheet.bind(this, true)}>分享挑战</View>
             }
           </View>
+
+        </View>
+        <View className="challenge-list">
+          <View className="title"><Image className="srophy" src={srophyIcon}></Image><View>挑战榜</View></View>
+          {(!users || users.length === 0)
+            ? <View className="no-users"><View>暂无挑战</View></View>
+            : <View className="users">
+              {
+                users.map((user, index) => {
+                  const stared = !!user.stars.find(id => id === owner.id)
+
+                  return <View key={user._id} className={classNames('item')}>
+                    <View className="item-index">{index + 1}、</View>
+                    <View><Image className="item-avatar" src={user.avatarUrl}></Image></View>
+                    <View className="button">试听</View>
+                    <View className="item-hurt" onClick={() => { this.onStar(user._id || '', stared)}}>
+                      {
+                        stared ? <Image className="icon" src={hurtActiveIcon}></Image> : <Image className="icon" src={hurtIcon}></Image>
+                      }
+                      <View className="count">{user.stars.length}</View>
+                    </View>
+                  </View>
+                })
+              }
+            </View>
+          }
         </View>
         {/* 分享弹窗 */}
         <AtActionSheet cancelText="取消" isOpened={showActionSheet} onClose={this.onToggleActionSheet.bind(this, false)}>

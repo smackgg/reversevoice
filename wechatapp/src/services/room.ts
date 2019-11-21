@@ -23,3 +23,12 @@ export const joinRoom = (data: {
   method: 'PUT',
   data,
 })
+
+export const star = (data: {
+  userId: string,
+  roomId: string
+}) => request({
+  url: '/api/room/star',
+  method: 'PUT',
+  data,
+})

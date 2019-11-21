@@ -48,9 +48,9 @@
       color: #253E61;
     }
 
-    .play-buttons {
+    .control-buttons {
       display: flex;
-      .button {
+      .control-button {
         width: 80rpx;
         height: 80rpx;
         box-sizing: border-box;
@@ -96,13 +96,13 @@
       display: flex;
       justify-content: space-around;
       margin-top: 60rpx;
+
       .button {
         // width: 300rpx;
         padding: 0rpx 40rpx;
         height: 90rpx;
         flex: 1;
         text-align: center;
-        line-height: 90rpx;
         color: #fff;
         font-size: 30rpx;
         background: #37C15F;
@@ -127,6 +127,81 @@
 
     &.button-hover {
       background: $color-white;
+    }
+  }
+
+  .challenge-list {
+    margin-top: 30rpx;
+    min-height: calc(100vh - 245rpx);
+    background: #fff;
+    padding: 0 60rpx;
+    .title {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 50rpx;
+      line-height: 70rpx;
+      padding: 30rpx;
+      border-bottom: 2rpx solid #CFCFCF;
+      .srophy {
+        width: 38rpx;
+        height: 46rpx;
+        margin-right: 29rpx;
+      }
+    }
+  }
+
+  .no-users {
+    width: 100%;
+    margin-top: 200rpx;
+    font-size: 50rpx;
+    text-align: center;
+    color: $text-color-gray;
+  }
+
+  .users {
+    .item {
+      margin-top: 40rpx;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      &-index {
+        width: 60rpx;
+      }
+
+      &-avatar {
+        width: 100rpx;
+        height: 100rpx;
+      }
+
+      &-hurt {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        .icon {
+          width: 46rpx;
+          height: 36rpx;
+        }
+
+        .count {
+          font-size: 20rpx;
+          line-height: 28rpx;
+          color: #B7BFCF;
+          margin-top: 2rpx;
+        }
+      }
+    }
+
+    .button {
+      height: 60rpx;
+      padding: 0;
+      width: 100rpx;
+      margin-left: 20rpx;
+      border-radius: 30rpx;
+      margin-right: 290rpx;
     }
   }
 }

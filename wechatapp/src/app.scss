@@ -56,3 +56,25 @@ button {
   }
 }
 
+
+.button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+    // width: 300rpx;
+  padding: 0rpx 40rpx;
+  height: 90rpx;
+  text-align: center;
+  color: #fff;
+  font-size: 30rpx;
+  background: #37C15F;
+  border-radius: 20rpx;
+  margin-right: 10rpx;
+
+  &:last-child {
+    margin-right: 0;
+  }
+  &:active {
+    opacity: .8;
+  }
+}
