@@ -135,12 +135,19 @@ export const reverse = (reverseFile: LocalFileInfo): Promise<any> => {
       },
       fail: reject,
       success: (res) => {
+        if (res.statusCode !== 200) {
+          return reject()
+        }
+
         const data = JSON.parse(res.data)
         const { path, duration } = data.data
         //do something
         Taro.downloadFile({
           url: `${API_URL}/${path}`,
           success: (saveRes) => {
+            if (saveRes.statusCode !== 200) {
+              return reject()
+            }
             // 更新文件列表
             // this.await ()
             Taro.saveFile({

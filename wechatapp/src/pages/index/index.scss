@@ -10,9 +10,26 @@
   }
 
   .info {
-    padding: 60rpx 40rpx;
-    font-size: 30rpx;
-    line-height: 60rpx;
+    padding: 60rpx;
+    font-size: 28rpx;
+    line-height: 50rpx;
+    font-weight: bold;
+    .title {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-bottom: 30rpx;
+      border-bottom: 2px solid #CFCFCF;
+      font-size: 50rpx;
+      line-height: 70rpx;
+      color: #464646;
+      margin-bottom: 40rpx;
+      .icon {
+        width: 48rpx;
+        height: 48rpx;
+        margin-right: 30rpx;
+      }
+    }
   }
   &.active {
     .record {
