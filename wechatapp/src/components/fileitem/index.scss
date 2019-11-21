@@ -26,6 +26,7 @@
 
     .share-info {
       color: $link-color;
+      font-size: 30rpx;
     }
   }
 
@@ -113,8 +114,17 @@
       opacity: .6;
     }
 
-    .share-info {
+
+    .challenge {
       color: $link-color;
+    }
+
+    .share {
+      color: #37C15F;
+    }
+
+    .delete {
+      color: $text-color-red;
     }
     view {
       margin-left: 20rpx;

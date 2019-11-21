@@ -342,17 +342,19 @@ class FileItem extends Taro.Component {
       {
         !noIcon && <View className="share-wrapper">
           {
-            fileState.roomId && <View onClick={this.goSharePage.bind(this, fileState.roomId)} className="share-info">
+            fileState.roomId && <View onClick={this.goSharePage.bind(this, fileState.roomId)} className="challenge">
               查看挑战
             </View>
           }
           {
-            !fileState.roomId && <View onClick={this.onShare} className="share-icon">
-              <AtIcon value="share" size="26" color="#000"></AtIcon>
+            !fileState.roomId && <View onClick={this.onShare} className="share">
+              {/* <AtIcon value="share" size="26" color="#000"></AtIcon> */}
+              分享挑战
             </View>
           }
-          <View onClick={this.onDelete}>
-            <AtIcon value="trash" size="26" color="#F00"></AtIcon>
+          <View className="delete" onClick={this.onDelete}>
+            删除
+            {/* <AtIcon value="trash" size="26" color="#F00"></AtIcon> */}
           </View>
         </View>
       }
