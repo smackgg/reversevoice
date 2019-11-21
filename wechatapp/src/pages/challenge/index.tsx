@@ -67,6 +67,8 @@ class Challenge extends Component {
   RecorderManager: RecorderManager
   tempFilePath?: string
   roomId: string
+  start: boolean = false
+  fileIndex: number
 
   state: PageState = {
     recording: false,
@@ -98,6 +100,7 @@ class Challenge extends Component {
         // 保存文件
         const fileInfo = await saveFile(res.tempFilePath)
         const index = await reverse(fileInfo)
+        this.fileIndex = index
 
         const files = await getFiles()
 
@@ -132,15 +135,15 @@ class Challenge extends Component {
       return
     }
     const { recording } = this.state
-    this.setState({
-      recording: !recording,
-    })
 
     // 开始录音
     if (!recording) {
+      this.setState({
+        recording: true,
+      })
       setTimeout(() => {
         this.startRecord()
-      }, 200)
+      }, 100)
     } else {
       this.stopRecord()
     }
@@ -148,7 +151,10 @@ class Challenge extends Component {
 
   // 开始录音
   startRecord = () => {
-
+    if (this.start) {
+      return
+    }
+    this.start = true
     this.RecorderManager.start({
       format: 'mp3',
       // sampleRate: '8000',
@@ -170,6 +176,9 @@ class Challenge extends Component {
 
   // 结束录音
   stopRecord = (resetTime = true) => {
+    if (this.state.time <= 3000) {
+      return
+    }
     clearInterval(this.timer)
     this.timer = undefined
     this.RecorderManager.stop()
@@ -179,6 +188,10 @@ class Challenge extends Component {
         time: 0,
       })
     }
+    this.setState({
+      recording: false,
+    })
+    this.start = false
   }
 
   onRecord = () => {
@@ -202,19 +215,26 @@ class Challenge extends Component {
     }
 
     try {
-      const [file, reverseFile] = await Promise.all([await uploadFile({
+      const [file, reverseFile] = await Promise.all([uploadFile({
         path: fileState.path,
         duration: fileState.duration,
-      }), await uploadFile({
+      }), uploadFile({
         path: fileState.reverseFilePath,
         duration: fileState.duration,
       })])
-        .then(results => results).catch(error => Promise.reject(error))
+        .then(results => results)
 
       await joinRoom({
         id: this.roomId,
         oriAudioUrl: file.data.path,
         revAudioUrl: reverseFile.data.path,
+      })
+
+
+      const files = await getFiles()
+
+      this.setState({
+        file: files.filter(f => f.index === this.fileIndex)[0],
       })
 
       Taro.showModal({
