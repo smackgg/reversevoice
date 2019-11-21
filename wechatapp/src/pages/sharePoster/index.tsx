@@ -163,8 +163,8 @@ class SharePoster extends Component {
   getQrImgInfo = async (): Promise<getImageInfo.Promised> => {
     const [error, res] = await cError(getWxacodeunlimit({
       scene: `roomId=${this.roomId}`,
-      // page: 'pages/room/index',
-      page: 'pages/index/index',
+      page: 'pages/room/index',
+      // page: 'pages/index/index',
     }))
 
     if (error) {
