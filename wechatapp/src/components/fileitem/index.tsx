@@ -229,6 +229,10 @@ class FileItem extends Taro.Component {
     }
     const { fileState } = this.state
 
+    if (fileState.roomId) {
+      this.goSharePage(fileState.roomId)
+      return
+    }
     try {
       const [file, reverseFile] = await Promise.all([await uploadFile({
         path: fileState.path,
