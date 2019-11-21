@@ -1,7 +1,7 @@
 import { ComponentClass } from 'react'
 import Taro, { Component, Config, RecorderManager } from '@tarojs/taro'
 import { connect } from '@tarojs/redux'
-import { View, Block } from '@tarojs/components'
+import { View, Block, Image } from '@tarojs/components'
 import classNames from 'classnames'
 // import { AtIcon } from 'taro-ui'
 import { getTimeStr } from '@/utils'
@@ -10,6 +10,7 @@ import withShare from '@/components/@withShare'
 import { getRecordAuth } from '@/utils/auth'
 import { UserDetail } from '@/redux/reducers/user'
 import { FileItem } from '@/components'
+import infoTitleIcon from '@/assets/images/info-title.png'
 import './index.scss'
 
 // #region 书写注意
@@ -72,6 +73,8 @@ class Index extends Component {
   RecorderManager: RecorderManager
   tempFilePath?: string
   fileRef?: any
+  start: boolean = false
+  fileIndex: number
 
   state: PageState = {
     recording: false,
@@ -103,6 +106,7 @@ class Index extends Component {
         // 保存文件
         const fileInfo = await saveFile(res.tempFilePath)
         const index = await reverse(fileInfo)
+        this.fileIndex = index
         // await this.getFiles(true)
         const files = await getFiles()
 
@@ -136,12 +140,11 @@ class Index extends Component {
       return
     }
     const { recording } = this.state
-    this.setState({
-      recording: !recording,
-    })
-
     // 开始录音
     if (!recording) {
+      this.setState({
+        recording: true,
+      })
       setTimeout(() => {
         this.startRecord()
       }, 200)
@@ -174,6 +177,10 @@ class Index extends Component {
 
   // 结束录音
   stopRecord = (resetTime = true) => {
+    if (this.state.time <= 3000) {
+      return
+    }
+
     clearInterval(this.timer)
     this.timer = undefined
     this.RecorderManager.stop()
@@ -183,6 +190,11 @@ class Index extends Component {
         time: 0,
       })
     }
+
+    this.setState({
+      recording: false,
+    })
+    this.start = false
   }
 
   onRecord = () => {
@@ -191,8 +203,13 @@ class Index extends Component {
     })
   }
 
-  onChallenge = () => {
-    this.fileRef && this.fileRef.onShare()
+  onChallenge = async () => {
+    this.fileRef && this.fileRef.onShare().then(() => {
+      this.setState({
+        file: null,
+      })
+    })
+
   }
 
   render() {
@@ -212,7 +229,7 @@ class Index extends Component {
         }
 
         <View className="info">
-          <View>游戏规则：</View>
+          <View className="title"><Image className="icon" src={infoTitleIcon}></Image>游戏规则</View>
           <View>1. 假设两个人 A 和 B 。</View>
           <View>2. A 录音并进行反转，将反转后的录音给 B 听。</View>
           <View>3. B 模仿倒放后的录音，再进行反转。</View>
