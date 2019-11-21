@@ -263,7 +263,10 @@ class FileItem extends Taro.Component {
     // })
   }
 
-  goSharePage = (roomId: string) => {
+  goSharePage = (roomId: string, e?: TaroBaseEventOrig) => {
+    if (e) {
+      e.stopPropagation()
+    }
     Taro.navigateTo({
       url: `/pages/room/index?roomId=${roomId}`,
     })

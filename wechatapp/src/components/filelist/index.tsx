@@ -42,6 +42,10 @@ class FileList extends Taro.Component {
     })
   }
 
+  componentDidMount() {
+    this.onShowDetail((this.props.fileList[0] && this.props.fileList[0].file && this.props.fileList[0].file.createTime) || -1)
+  }
+
   componentWillReceiveProps(nextProps: PageOwnProps) {
     // if (nextProps.recording !== this.props.recording && nextProps.recording) {
     //   this.setState({
@@ -49,15 +53,14 @@ class FileList extends Taro.Component {
     //   })
     // }
     if (nextProps.fileList.length !== this.props.fileList.length) {
-      this.setState({
-        activeKey: -1,
-      })
+      this.onShowDetail((nextProps.fileList[0] && nextProps.fileList[0].file && nextProps.fileList[0].file.createTime) || -1)
     }
   }
 
   render() {
     const { activeKey } = this.state
     const { shouldUpdateFileList, fileList } = this.props
+
     if (!fileList) {
       return <View></View>
     }
