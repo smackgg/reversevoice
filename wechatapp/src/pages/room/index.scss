@@ -224,6 +224,13 @@
 
   .control-buttons {
     display: flex;
+
+    .rule {
+      color: $link-color;
+      font-size: 30rpx;
+      margin-left: 40rpx;
+      margin-top: 20rpx;
+    }
     .control-button {
       width: 80rpx;
       height: 80rpx;

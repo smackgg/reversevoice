@@ -6,7 +6,7 @@ import classNames from 'classnames'
 import { getDurationByFilePath } from '@/utils/reverse'
 import withShare from '@/components/@withShare'
 import { connect } from '@tarojs/redux'
-import { AtActionSheet, AtActionSheetItem } from 'taro-ui'
+import { AtActionSheet, AtActionSheetItem, AtModal, AtModalHeader, AtModalContent, AtModalAction } from 'taro-ui'
 
 import { getRoomDetail, star } from '@/services/room'
 import { cError, getTimeStr } from '@/utils'
@@ -67,6 +67,7 @@ type PageState = {
   playStatus: 0 | 1 | 2 // 0-停止 1-播放中 2-暂停,
   showActionSheet: boolean,
   ratio: number,
+  showRule: boolean,
 }
 
 type IProps = PageStateProps & PageDispatchProps & PageOwnProps
@@ -106,6 +107,7 @@ class Room extends Component {
   // tempFilePath?: string
 
   state: PageState = {
+    showRule: false,
     // recording: false,
     activeIndex: 0,
     owner: {
@@ -145,9 +147,17 @@ class Room extends Component {
     //     currentTime: this.state.durationTime,
     //   })
     // })
-
-    let { roomId } = this.$router.params
+    // console.log(this.$router.params)
+    let { roomId, scene } = this.$router.params
     this.roomId = roomId
+
+    // 处理扫码进商品详情页面的逻辑
+    if (scene) {
+      scene = decodeURIComponent('' + scene)
+
+      const [id] = scene.split(',')
+      this.roomId = id
+    }
     console.log('roomId: ', this.roomId)
     this.$shareOptions.path = `pages/room/index?roomId=${roomId}`
 
@@ -166,9 +176,9 @@ class Room extends Component {
   }
 
   initAudio = (url: string) => new Promise(resolve => {
-    Taro.setInnerAudioOption({
-      obeyMuteSwitch: false,
-    })
+    // Taro.setInnerAudioOption({
+    //   obeyMuteSwitch: false,
+    // })
 
     if (this.innerAudioContext && this.innerAudioContext.src === url && this.canplay) {
       return resolve()
@@ -338,8 +348,14 @@ class Room extends Component {
     })
   }
 
+  toggleRule = (show: boolean) => {
+    this.setState({
+      showRule: show,
+    })
+  }
+
   render() {
-    const { owner, users, currentTime, activeIndex, playStatus, showActionSheet, ratio } = this.state
+    const { owner, users, showRule, currentTime, activeIndex, playStatus, showActionSheet, ratio } = this.state
     const { userDetail } = this.props
 
     return (
@@ -360,6 +376,7 @@ class Room extends Component {
                   : <View className="control-button play" onClick={this.onPlay.bind(this, 0)}><Image className="play-icon" src={playIcon}></Image></View>
               }
               <View className="control-button stop" onClick={this.onStop.bind(this, 0)}><Image className="stop-icon" src={stopIcon}></Image></View>
+              <View className="rule" onClick={this.toggleRule.bind(this, true)}>玩法规则</View>
               {/* <View className={classNames('control-button ratio1', { active: ratio === 0 })} onClick={() => { this.changeRatio(0) }}><Image className="ratio-icon" src={ratio === 0 ? closeIcon : closeBlackIcon}></Image>0.75</View>
               <View className={classNames('control-button ratio2', { active: ratio === 1 })}onClick={() => { this.changeRatio(1) }}><Image className="ratio-icon" src={ratio === 1 ? closeIcon : closeBlackIcon}></Image>0.5</View> */}
             </View>
@@ -434,6 +451,17 @@ class Room extends Component {
             生成海报
           </AtActionSheetItem>
         </AtActionSheet>
+
+        <AtModal isOpened={showRule}>
+          <AtModalHeader>倒放挑战玩法规则</AtModalHeader>
+          <AtModalContent>
+            <View>1. 假设两个人 A 和 B 。</View>
+            <View>2. A 录音并进行反转，将反转后的录音给 B 听。</View>
+            <View>3. B 模仿倒放后的录音，再进行反转。</View>
+            <View>4. B 通过反转后的声音，猜测 A 录的原声。</View>
+          </AtModalContent>
+          <AtModalAction><Button onClick={this.toggleRule.bind(this, false)}>确定</Button> </AtModalAction>
+        </AtModal>
       </View>
     )
   }
