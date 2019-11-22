@@ -298,6 +298,12 @@ class Room extends Component {
   }
 
   onStar = async (userId: string, stared: boolean) => {
+    if (!this.props.userDetail.isLogin) {
+      Taro.navigateTo({
+        url: '/pages/authorize/index',
+      })
+      return
+    }
     // 暂时不做取消点赞
     if (stared) {
       return
@@ -379,7 +385,8 @@ class Room extends Component {
             : <View className="users">
               {
                 users.map((user, index) => {
-                  const stared = !!user.stars.find(id => id === owner.id)
+                  // console.log(user.stars, owner.id)
+                  const stared = !!user.stars.find(id => id === userDetail._id)
                   const active = activeIndex === index + 1
                   return <View className="item-wrapper" key={user._id}>
                     <View className={classNames('item')}>
