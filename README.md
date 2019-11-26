@@ -1,5 +1,9 @@
 # ReverseVoice (微信小程序版)
 
+# 体验
+
+![ 二维码](/static/qr.png)
+
 # 项目运行 - 后端
 
 ## 准备
