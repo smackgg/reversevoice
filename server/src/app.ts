@@ -106,21 +106,11 @@ const routes: {
   file: require('./routes/file'),
   room: require('./routes/room'),
   wechat: require('./routes/wechat'),
-  // users: require('./routes/users'),
-  // 公共 api
-  // user: require('./routes/user'),
-  // 哈理工 api
-  // hrbust: require('./routes/hrbust'),
-  // 一些公共 api
-  // other: require('./routes/other'),
-  // 后台 api
-  // backend: require('./routes/backend'),
 }
 
 // routes
 Object.keys(routes).forEach(key => {
   const route = routes[key]
-  // , route.allowedMethods()
   app.use(route.routes())
 })
 

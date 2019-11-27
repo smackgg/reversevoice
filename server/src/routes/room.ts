@@ -10,8 +10,5 @@ router.get('/', async ctx => getRoom(ctx))
 router.put('/', async ctx => putJoinRoom(ctx))
 router.put('/star', async ctx => putRoomUserStars(ctx))
 
-// router.put('/userinfo', async (ctx) => updateUserInfo(ctx))
-
-// router.get('/userinfo', async (ctx) => getUserInfo(ctx))
 
 module.exports = router
