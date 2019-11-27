@@ -389,9 +389,7 @@ class Room extends Component {
                 <View className="button" onClick={this.onNewChallenge}>我也要玩</View>
               </Block>
             }
-            {
-              userDetail._id === owner.id && <View className="button" onClick={this.onToggleActionSheet.bind(this, true)}>分享挑战</View>
-            }
+              <View className="button" onClick={this.onToggleActionSheet.bind(this, true)}>分享挑战</View>
           </View>
 
         </View>

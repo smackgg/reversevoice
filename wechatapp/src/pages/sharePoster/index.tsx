@@ -114,8 +114,8 @@ class SharePoster extends Component {
     })
     // 获取图片信息
     const [productImgInfo, qrcodeImgInfo] = await Promise.all([
-      await this.getImageInfo(sharePoster),
-      await this.getQrImgInfo(),
+      this.getImageInfo(sharePoster),
+      this.getQrImgInfo(),
     ])
 
     // product image 宽高
