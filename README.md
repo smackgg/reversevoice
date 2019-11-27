@@ -1,6 +1,6 @@
-# ReverseVoice (微信小程序版) Ts Node Taro
+# 倒放挑战 - ReverseVoice (微信小程序版) Ts Node Taro
 
-整个项目其实很简单，从本人在抖音和 B 站看到火起来到最终小程序上线也就几天的下班时间就搞定了，11月16日上线至今用户量还是蛮多的(主要当时做的快此类 app 还是太少了😂)，现在已经出现了大量的更简约更好的倒放挑战 app，本项目开源仅供大家学习~
+整个项目其实很简单，从本人在抖音和 B 站看到火起来到最终小程序上线也就几天的下班时间就搞定了，11月16日上线至今用户量还是蛮多的(主要当时做的快此类 app 比较少😂)，现在已经出现了大量的更简约更好的倒放挑战 app，本项目开源仅供大家学习~
 
 拥抱 TypeScript
 顺便小声吐槽一下 Taro 对 Ts 的支持还是不够啊，希望大家多去给 Taro 提 dts 的 PR ~
@@ -36,6 +36,7 @@ ffmpeg.setFfmpegPath(ffmpegPath.path)
 
 ffmpeg(filepath)
     .format('mp4')
+    // 反转
     .outputOptions([
       '-vf reverse',
       '-af areverse',
@@ -51,6 +52,7 @@ ffmpeg(filepath)
       console.log(`Ffmpeg has been killed${err.message}`)
     })
     .toFormat('mp3')
+    // 保存
     .save(publicPath + saveFilePath)
     .on('end', () => {
       // 获取音频信息（时长等）
