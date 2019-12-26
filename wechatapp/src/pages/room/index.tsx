@@ -130,6 +130,24 @@ class Room extends Component {
   }
 
   async componentDidShow() {
+    // 在页面中定义插屏广告
+    let interstitialAd: any = null
+    // 在页面onLoad回调事件中创建插屏广告实例
+    if (wx.createInterstitialAd) {
+      interstitialAd = wx.createInterstitialAd({
+        adUnitId: 'adunit-04f54f686231da6e',
+      })
+      interstitialAd.onLoad(() => { console.log('adload') })
+      interstitialAd.onError((error: any) => { console.log('aderror:', error) })
+      interstitialAd.onClose(() => { console.log('adclose') })
+    }
+
+    // 在适合的场景显示插屏广告
+    if (interstitialAd) {
+      interstitialAd.show().catch((err: any) => {
+        console.error(err)
+      })
+    }
     // let innerAudioContext = Taro.createInnerAudioContext()
     // Taro.setInnerAudioOption({
     //   obeyMuteSwitch: false,
@@ -389,7 +407,7 @@ class Room extends Component {
                 <View className="button" onClick={this.onNewChallenge}>我也要玩</View>
               </Block>
             }
-              <View className="button" onClick={this.onToggleActionSheet.bind(this, true)}>分享挑战</View>
+            {(userDetail._id === owner.id) && <View className="button" onClick={this.onToggleActionSheet.bind(this, true)}>分享挑战</View>}
           </View>
 
         </View>

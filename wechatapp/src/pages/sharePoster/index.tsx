@@ -100,7 +100,7 @@ class SharePoster extends Component {
     getImageInfo({
       src: url,
       success: resolve,
-      fail: (err) => {
+      fail: (err: any) => {
         console.log(err, 'err')
       },
     })

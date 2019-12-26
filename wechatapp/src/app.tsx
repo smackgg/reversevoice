@@ -3,13 +3,14 @@ import Taro, { Component, Config } from '@tarojs/taro'
 import { Provider } from '@tarojs/redux'
 // import { getVipLevel, getSystemConfig } from '@/redux/actions/config'
 // import { checkToken } from '@/services/user'
-// import { getUserDetail } from '@/redux/actions/user'
 
-import { showToast, ShowToastParam } from './utils'
+import { login } from './services/user'
+import { showToast, ShowToastParam, cError } from './utils'
 import Index from './pages/index'
 import { store } from './redux/store'
 import { UPDATE_GLOBAL_DATA } from './redux/actions/global'
 import { getUserDetail } from './redux/actions/user'
+
 import './app.scss'
 
 
@@ -143,24 +144,61 @@ class App extends Component {
 
   checkLogin = (): Promise<any> => new Promise(async (resolve, reject) => {
     try {
-      // const token = Taro.getStorageSync('token')
-      // // 本地没有登录 token
-      // if (!token) {
-      //   return reject()
-      // }
-
       await this.checkSession()
+      const tokenStorage = Taro.getStorageSync('token')
+      if (!tokenStorage) {
+        Taro.login({
+          success: async res => {
+            Taro.getUserInfo({
+              success: async result => {
+                const { iv, encryptedData } = result
+                // 登录接口
+                const [error, loginRes] = await cError(login({ code: res.code, iv, encryptedData }))
 
-      const userDetail = await store.dispatch(getUserDetail())
+                // 登录错误
+                if (error || loginRes.code !== 0) {
+                  Taro.hideLoading()
+                  Taro.showModal({
+                    title: '提示',
+                    content: '无法登录，请重试',
+                    showCancel: false,
+                  })
+                  return
+                }
 
-      if (!userDetail.isLogin) {
-        return reject()
+                this.getUserDetail().catch(() => reject)
+              },
+              fail: () => {
+                // 没有授权用户信息
+                reject()
+              },
+            })
+          },
+        })
+      } else {
+        return this.getUserDetail(tokenStorage)
       }
-      resolve()
     } catch (e) {
       reject(e)
     }
   })
+
+  getUserDetail = async (tokenStorage?: string) => {
+    try {
+      const userDetail = await store.dispatch(getUserDetail())
+      if (!userDetail.isLogin) {
+        return Promise.reject()
+      }
+    } catch (error) {
+      console.log(error)
+      if (error.code === 401 && tokenStorage) {
+        Taro.removeStorageSync('token')
+        this.checkLogin()
+      }
+    }
+
+  }
+
 
   // 检查用户授权的 session
   checkSession = () => new Promise((resolve, reject) => {
@@ -191,14 +229,6 @@ class App extends Component {
     })
   }
 
-  goToLoginPage = () => {
-    // Taro.removeStorageSync('token')
-    setTimeout(() => {
-      Taro.navigateTo({
-        url: '/pages/authorize/index',
-      })
-    }, 300)
-  }
   // 在 App 类中的 render() 函数没有实际作用
   // 请勿修改此函数
   render() {

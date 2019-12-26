@@ -83,7 +83,7 @@ class Auth extends Component {
     const tokenStorage = Taro.getStorageSync('token')
     if (tokenStorage) {
       // 校验 token 是否有效
-      const res = await getUserDetail()
+      const res: any = await getUserDetail()
 
       if (!res.isLogin) {
         Taro.removeStorageSync('token')
