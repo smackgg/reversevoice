@@ -13,19 +13,26 @@ import { getWxAuthorization, WXBizDataCrypt } from '../util/wechat'
 export const postLogin = async (ctx: any) => {
   const { code, iv, encryptedData } = ctx.request.fields
 
-  if (!code || !iv || !encryptedData) ctx.throw(401, 'no jscode')
+  if (!code) ctx.throw(401, 'no jscode')
   try {
     // 微信鉴权
     const data = await getWxAuthorization(code)
-    const pc = new WXBizDataCrypt(data.session_key)
-    const { openId, unionId, ...profile } = pc.decryptData(encryptedData, iv)
+
+    let userData: any = {
+      openid: data.openid,
+    }
+    if (iv && encryptedData) {
+      const pc = new WXBizDataCrypt(data.session_key)
+      const { openId, unionId, ...profile } = pc.decryptData(encryptedData, iv)
+      userData = {
+        openid: openId,
+        unionId,
+        profile,
+      }
+    }
 
     // 更新数据库用户信息
-    await User.findOneAndUpdate({ openid: data.openid }, {
-      openid: openId,
-      unionId,
-      profile,
-    }, {
+    await User.findOneAndUpdate({ openid: data.openid }, userData, {
       upsert: true,
     })
 
@@ -45,14 +52,15 @@ export const postLogin = async (ctx: any) => {
 
 // 获取用户信息
 export const getUserInfo = async (ctx: any) => {
-  // console.log(ctx.session, 'cookie info')
+
   const { openid, sessionKey } = ctx.session
   if (!(openid && sessionKey)) {
     ctx.body = {
       data: {
         isLogin: false,
       },
-      code: 0,
+      code: 401,
+      msg: '登录失效',
     }
     return
   }
