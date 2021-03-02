@@ -102,6 +102,7 @@ app.use(async (ctx, next) => {
 const routes: {
   [key: string]: any;
 } = {
+  index: require('./routes/index'),
   user: require('./routes/user'),
   file: require('./routes/file'),
   room: require('./routes/room'),
