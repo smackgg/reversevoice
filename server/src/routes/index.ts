@@ -29,7 +29,7 @@ function isAlive() {
 }
 
 // 获取access token
-function getAccessToken(appid, appsecret, callback) {
+function getAccessToken(appid: any, appsecret: any) {
   return axios
     .get("https://api.weixin.qq.com/cgi-bin/token", {
       params: {
@@ -38,18 +38,18 @@ function getAccessToken(appid, appsecret, callback) {
         secret: config.appsecret,
       },
     })
-    .then(function (response) {
+    .then(function (response: any) {
       console.log(response, 111);
       // callback(response.data);
       return response.data;
     })
-    .catch(function (error) {
-      callback(error);
+    .catch(function (error: any) {
+      // callback(error);
     });
 }
 
 // 获取ticket
-function getTicket(accessToken, callback) {
+function getTicket(accessToken: any) {
   return axios
     .get("https://api.weixin.qq.com/cgi-bin/ticket/getticket", {
       params: {
@@ -57,17 +57,17 @@ function getTicket(accessToken, callback) {
         type: "jsapi",
       },
     })
-    .then(function (response) {
+    .then(function (response: any) {
       // callback(response.data);
       return response.data;
     })
-    .catch(function (error) {
-      callback(error);
+    .catch(function (error: any) {
+      // callback(error);
     });
 }
 
 // 获取签名
-function getHash(jsapi_ticket, noncestr, timestamp, url) {
+function getHash(jsapi_ticket: any, noncestr: any, timestamp: any, url: any) {
   let str =
     "jsapi_ticket=" +
     jsapi_ticket +
