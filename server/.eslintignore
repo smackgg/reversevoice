@@ -10,3 +10,5 @@ coverage/*
 /src/types/
 
 node_modules/*
+
+src/routes/index.ts

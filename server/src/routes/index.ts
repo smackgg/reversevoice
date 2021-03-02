@@ -1,3 +1,5 @@
+// @ts-ignore
+
 import Router from "koa-router";
 import { getWxacode } from "../controllers/wechat";
 import { config } from "./config";
