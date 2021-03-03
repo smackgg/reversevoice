@@ -65,7 +65,7 @@
     "node-qiniu": "^6.2.0",
     "node-watch": "^0.6.3",
     "nodemailer": "^6.3.0",
-    "pug": "^2.0.4",
+    "pug": "^3.0.1",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "winston": "^3.2.1"
