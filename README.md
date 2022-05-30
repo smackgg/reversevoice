@@ -119,7 +119,7 @@ const draw = async () => {
 }
 ```
 
-- 微信分享 HOC 函数  [./wechatapp/components/@withShare](https://github.com/smackgg/reversevoice/blob/master/wechatapp/src/components/%40withShare/index.tsx)
+## 微信分享 HOC 函数  [./wechatapp/components/@withShare](https://github.com/smackgg/reversevoice/blob/master/wechatapp/src/components/%40withShare/index.tsx)
 
 ```js
 // 微信小程序每个页面几乎都需要配置分享的参数，并且需要动态更改分享参数
