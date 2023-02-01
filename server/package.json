@@ -61,7 +61,7 @@
     "koa-views": "^6.2.1",
     "lodash": "^4.17.15",
     "lusca": "^1.6.1",
-    "mongoose": "^5.7.5",
+    "mongoose": "^5.13.15",
     "node-qiniu": "^6.2.0",
     "node-watch": "^0.6.3",
     "nodemailer": "^6.3.0",
